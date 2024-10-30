@@ -309,7 +309,18 @@ class DashCallbacks(Utils):
                         self.fig.add_trace(go.Scattergl(name=data_names[row_index][col_index]), hf_x=self.time[time_names[row_index]], hf_y=self.data[data_names[row_index][col_index]], secondary_y = int(inputs[i+(total_elements+1)]))
 
 
-                self.fig.update_layout(height=900, template="plotly_dark")
+                self.fig.update_layout(
+                    height=900, 
+                    template="plotly_dark", 
+                    xaxis=dict(
+                        titlefont=dict(size=18),  # X axis title font size
+                        tickfont=dict(size=16)    # X axis tick font size
+                    ),
+                    yaxis=dict(
+                        titlefont=dict(size=18),  # Y axis title font size
+                        tickfont=dict(size=16)    # Y axis tick font size
+                    ),
+                )
 
                 status_update = "Graf nastaven!"
                 return self.fig, status_update
@@ -471,7 +482,16 @@ class DashCallbacks(Utils):
                 self.fig.add_trace(go.Scattergl(name=f"EKG EPOCHA {cislo_epochy}"), hf_x=ekg_epocha_cz, hf_y=ekg_epocha)
                 
 
-                self.fig.update_layout(template="plotly_dark", margin=dict(l=125, r=0, t=0, b=50))
+                self.fig.update_layout(template="plotly_dark", margin=dict(l=125, r=0, t=0, b=50),
+                                       xaxis=dict(
+                                            titlefont=dict(size=18),  # X axis title font size
+                                            tickfont=dict(size=16)    # X axis tick font size
+                                        ),
+                                        yaxis=dict(
+                                            titlefont=dict(size=18),  # Y axis title font size
+                                            tickfont=dict(size=16)    # Y axis tick font size
+                                        )
+                                    )
 
                 
                 return self.fig

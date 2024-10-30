@@ -1,0 +1,4 @@
+/* Increase modebar icon size */
+.modebar-group * {
+    font-size: 24px !important;
+}

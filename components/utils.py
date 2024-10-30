@@ -124,7 +124,7 @@ class Utils():
             9: "Září", 10: "Říjen", 11: "Listopad", 12: "Prosinec"
         }
 
-        for filename in sorted(os.listdir(folder_path)):
+        for filename in sorted(os.listdir(folder_path), reverse=True):
             # Check if the filename matches the expected format
             if filename.startswith("Holter_"):
                 # Extract the YYMMDD part
