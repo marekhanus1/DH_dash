@@ -1,0 +1,132 @@
+from dash_resizable_panels import PanelGroup, Panel, PanelResizeHandle
+import dash_ag_grid as dag
+import dash_mantine_components as dmc
+from dash import dcc, html
+import plotly.graph_objects as go
+from dash_iconify import DashIconify
+from components.utils import Utils
+
+columnDefs = [
+        {"headerName": "Číslo epochy", 'field': 'Číslo epochy'},
+        {"headerName": "Čas epochy", 'field': 'Čas epochy' },
+        {"headerName": "HR", 'field': 'epochy_HR'},
+        {"headerName": "RESP", 'field': 'epochy_RESP'},
+        {"headerName": "RR-min", 'field': 'epochy_RR-min'},
+        {"headerName": "RR-max", 'field': 'epochy_RR-max' },
+        {"headerName": "SDNN", 'field': 'epochy_SDNN' },
+        {"headerName": "RMSSD", 'field': 'epochy_RMSSD'},
+        {"headerName": "FlexDer", 'field': 'epochy_FlexDer' },
+        {"headerName": "Arytmie", 'field': 'arytmie'},
+        
+    ]
+
+def show_epochy():
+    config = Utils.read_config()
+
+    
+
+    tabulka = dag.AgGrid(
+        id="epochy_gridtable",
+        columnDefs=columnDefs,
+        className="ag-theme-alpine-dark",
+        columnSize="sizeToFit",
+        style={"height": "50vh", "width": "100%"},
+        defaultColDef={"filter": True},
+        dashGridOptions = {'rowSelection': 'single', 'animateRows': False}
+    )
+
+    epochy_nastaveni_content = html.Div([
+        dmc.Card([
+            dmc.NumberInput(label="Minimální hodnota RR", id="epochy_RRmin", value=config.get("RR_min")),
+            dmc.NumberInput(label="Maximální hodnota RR", id="epochy_RRmax", value=config.get("RR_max")),
+            dmc.NumberInput(label="Maximální hodnota SDNN", id="epochy_SDNN", value=config.get("SDNN")),
+            dmc.NumberInput(label="Maximální hodnota RMSSD", id="epochy_RMSSD", value=config.get("RMSSD")),
+            dmc.NumberInput(label="Maximální hodnota FlexDeriv", id="epochy_FlexDeriv", value=config.get("FlexDeriv")),
+        ]),
+        dmc.Space(h=10),
+
+        dmc.Button("Potvrdit", color="green", id="epochy_submitbutton"),
+        dmc.Space(h=30),
+
+        html.Div(id="epochy_stats")
+    ])
+
+
+
+    header = html.Div([
+        dcc.Location(id='url', refresh=False),
+        dmc.Group([
+            # Left icon (home)
+            dcc.Link(
+                dmc.ActionIcon(DashIconify(icon="line-md:home-md", width=60), color="white", variant="subtle", size=80),
+                href="/",
+                style={"width": "80px", "display": "flex", "justify-content": "flex-start"}
+            ),
+            
+            # Center title
+            html.Div(
+                html.H1("Holter dekodér", style={"text-align": "center", "zoom": "1.2"}),
+                style={"flex": "1", "display": "flex", "align-items": "center", "justify-content": "center"}
+            ),
+            
+            # Right icon (settings)
+            dmc.ActionIcon(
+                
+                DashIconify(icon="clarity:settings-solid", width=60),
+                size=80,
+                variant="subtle",
+                color="white",
+                id="epochy_nastaveni",
+                style={"width": "80px", "display": "flex", "justify-content": "flex-end"}
+            ),
+            
+        ], justify="space_between", style={"height": "7.5vh", "width": "100vw", "padding": "0 2vw"}),
+    ])
+
+
+
+
+
+    epochy_maindiv = html.Div([
+        dmc.Drawer(
+                title="Nastavení",
+                id="epochy_drawer",
+                padding="md",
+                position="right",
+                opened=True,
+                children=[
+                    epochy_nastaveni_content
+                ]
+            ),
+        # Main layout
+        html.Div([
+            PanelGroup(
+                id='panel-group',
+                children=[
+                    Panel(
+                        children=[dcc.Graph(id="epochy_graph",figure=go.Figure(data=None, layout=dict(template='plotly_dark')),  style={"height":"70vh", "zoom": 1})],
+                        defaultSizePercentage=40, minSizePercentage=40
+                    ),
+                    PanelResizeHandle(html.Div(style={"backgroundColor": "white", "width": "100%", "height": "5px"})),
+                    Panel(
+                        children=[
+                            tabulka,
+                            html.Div(id='selected-row')
+                        ],
+                        minSizePercentage=25
+                    )
+                ],
+                direction='vertical',
+                style={"height": "89vh"}
+            )
+        ], style={"height": "89vh"}, id="epochy_main-div")
+    ])
+
+    return dmc.AppShell(
+                [
+                    dmc.AppShellHeader(children=[header], px=10),
+                    dmc.AppShellMain(children=[epochy_maindiv]),
+                ],
+                header={"height": "10vh"},
+                padding="xs",    
+    )
