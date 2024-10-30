@@ -124,7 +124,7 @@ class Utils():
             9: "Září", 10: "Říjen", 11: "Listopad", 12: "Prosinec"
         }
 
-        for filename in os.listdir(folder_path):
+        for filename in sorted(os.listdir(folder_path)):
             # Check if the filename matches the expected format
             if filename.startswith("Holter_"):
                 # Extract the YYMMDD part
@@ -164,6 +164,8 @@ class Utils():
                         value=config.get("date"),
                         leftSection=DashIconify(icon="clarity:date-line"),
                         w=300,
+                        withScrollArea=False,
+                        styles={"dropdown": {"maxHeight": 200, "overflowY": "auto"}},
                         disabled=disabled,
                         mb=10),
         

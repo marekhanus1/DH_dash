@@ -30,7 +30,7 @@ def show_epochy():
         columnDefs=columnDefs,
         className="ag-theme-alpine-dark",
         columnSize="sizeToFit",
-        style={"height": "50vh", "width": "100%"},
+        style={"height": "40vh", "width": "100%"},
         defaultColDef={"filter": True},
         dashGridOptions = {'rowSelection': 'single', 'animateRows': False}
     )
@@ -87,6 +87,7 @@ def show_epochy():
 
 
 
+    
     epochy_maindiv = html.Div([
         dmc.Drawer(
                 title="Nastavení",
@@ -100,33 +101,18 @@ def show_epochy():
             ),
         # Main layout
         html.Div([
-            PanelGroup(
-                id='panel-group',
-                children=[
-                    Panel(
-                        children=[dcc.Graph(id="epochy_graph",figure=go.Figure(data=None, layout=dict(template='plotly_dark')),  style={"height":"70vh", "zoom": 1})],
-                        defaultSizePercentage=40, minSizePercentage=40
-                    ),
-                    PanelResizeHandle(html.Div(style={"backgroundColor": "white", "width": "100%", "height": "5px"})),
-                    Panel(
-                        children=[
-                            tabulka,
-                            html.Div(id='selected-row')
-                        ],
-                        minSizePercentage=25
-                    )
-                ],
-                direction='vertical',
-                style={"height": "89vh"}
-            )
-        ], style={"height": "89vh"}, id="epochy_main-div")
+            
+            dcc.Graph(id="epochy_graph",figure=go.Figure(data=None, layout=dict(template='plotly_dark', margin=dict(l=125, r=0, t=0, b=50))),  style={"height":"50vh", "zoom": 1})   
+        ], style={"height": "50vh"})
     ])
 
     return dmc.AppShell(
-                [
-                    dmc.AppShellHeader(children=[header], px=10),
-                    dmc.AppShellMain(children=[epochy_maindiv]),
-                ],
-                header={"height": "10vh"},
-                padding="xs",    
-    )
+            [
+                dmc.AppShellHeader(children=[header], px=10),
+                dmc.AppShellMain(children=[epochy_maindiv]),
+                dmc.AppShellFooter(children=[tabulka])
+            ],
+            header={"height": "10vh"},
+            footer={"height": "40vh"},
+            padding="xs"
+        )

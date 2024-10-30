@@ -85,7 +85,7 @@ tabulka = dag.AgGrid(
     columnDefs=columnDefs,
     className="ag-theme-alpine-dark",
     columnSize="sizeToFit",
-    style={"height": "50vh", "width": "100%"},
+    style={"height": "40vh", "width": "100%"},
     defaultColDef={"filter": True},
     dashGridOptions = {'rowSelection': 'single', 'animateRows': False}
 )
@@ -141,7 +141,7 @@ header = html.Div([
 
 
 
-
+"""
 epochy_maindiv = html.Div([
     dmc.Drawer(
             title="Nastavení",
@@ -176,13 +176,36 @@ epochy_maindiv = html.Div([
         )
     ], style={"height": "89vh"}, id="main-div")
 ])
+"""
+
+epochy_maindiv = html.Div([
+    dmc.Drawer(
+            title="Nastavení",
+            id="epochy_drawer",
+            padding="md",
+            position="right",
+            opened=True,
+            children=[
+                epochy_nastaveni_content
+            ]
+        ),
+    # Main layout
+    html.Div([
+        
+        dcc.Graph(id="epochy_graph",figure=go.Figure(data=None, layout=dict(template='plotly_dark', margin=dict(l=125, r=0, t=0, b=50))),  style={"height":"50vh", "zoom": 1})   
+    ], style={"height": "50vh"})
+])
+
+
 
 epochy_appshell = dmc.AppShell(
             [
                 dmc.AppShellHeader(children=[header], px=10),
                 dmc.AppShellMain(children=[epochy_maindiv]),
+                dmc.AppShellFooter(children=[tabulka])
             ],
             header={"height": "10vh"},
+            footer={"height": "40vh"},
             padding="xs",    
 )
 
@@ -270,15 +293,27 @@ def epochy_set_limits(*inputs):
         stats_content = [
                             dmc.Stack(
                                 children=[
-                                    dmc.Text(f'Arytmické epochy: {stats["arytmie"]} z {pocet_epoch}'), 
-                                    dmc.Text(f'RR-min epochy: {stats["epochy_RR-min"]} z {pocet_epoch}'),
-                                    dmc.Text(f'RR-max epochy: {stats["epochy_RR-max"]} z {pocet_epoch}'),
-                                    dmc.Text(f'SDNN epochy: {stats["epochy_SDNN"]} z {pocet_epoch}'),
-                                    dmc.Text(f'RMSSD epochy: {stats["epochy_RMSSD"]} z {pocet_epoch}'),
-                                    dmc.Text(f'FlexDeriv epochy: {stats["epochy_FlexDer"]} z {pocet_epoch}'),
+                                    dmc.Text("Nadlimitní epochy:"), 
+
+                                    dmc.Group([dmc.Space(w=20),
+                                               dmc.Text(f'Arytmie: {stats["arytmie"]}/{pocet_epoch} [{(round(stats["arytmie"]/pocet_epoch*100))} %]')]),
+
+                                    dmc.Group([dmc.Space(w=20),
+                                               dmc.Text(f'RR-min: {stats["epochy_RR-min"]}/{pocet_epoch} [{(round(stats["epochy_RR-min"]/pocet_epoch*100))} %]')]),
+                                    
+                                    dmc.Group([dmc.Space(w=20),
+                                               dmc.Text(f'Arytmie: {stats["epochy_RR-max"]}/{pocet_epoch} [{(round(stats["epochy_RR-max"]/pocet_epoch*100))} %]')]),
+
+                                    dmc.Group([dmc.Space(w=20),
+                                               dmc.Text(f'SDNN: {stats["epochy_SDNN"]}/{pocet_epoch} [{(round(stats["epochy_SDNN"]/pocet_epoch*100))} %]')]),
+
+                                    dmc.Group([dmc.Space(w=20),
+                                               dmc.Text(f'RMSSD: {stats["epochy_RMSSD"]}/{pocet_epoch} [{(round(stats["epochy_RMSSD"]/pocet_epoch*100))} %]')]),
+                                    
+                                    dmc.Group([dmc.Space(w=20),
+                                               dmc.Text(f'FlexDer: {stats["epochy_FlexDer"]}/{pocet_epoch} [{(round(stats["epochy_FlexDer"]/pocet_epoch*100))} %]')]),       
                                 ]
                             )
-                            
                         ]
                 
         
@@ -328,7 +363,7 @@ def epochy_show_chart(selection):
         fig.add_trace(go.Scattergl(name=f"EKG EPOCHA {cislo_epochy}"), hf_x=ekg_epocha_cz, hf_y=ekg_epocha)
         
 
-        fig.update_layout(template="plotly_dark")
+        fig.update_layout(template="plotly_dark", margin=dict(l=125, r=0, t=0, b=50))
 
         
         return fig

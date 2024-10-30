@@ -160,6 +160,8 @@ class DashCallbacks(Utils):
                 if self.process.is_alive():
                     self.process.terminate()
                     self.process.join()
+                
+                self.disable_components = False
 
                 return layout_content.before_start()
             
@@ -398,20 +400,32 @@ class DashCallbacks(Utils):
                 self.epochy_data['arytmie'] = self.epochy_data.apply(check_arytmie, axis=1)
 
                 pocet_epoch = len(self.epochy_data["arytmie"])
+                
                 stats_content = [
                             dmc.Stack(
                                 children=[
-                                    dmc.Text(f'Arytmické epochy: {stats["arytmie"]} z {pocet_epoch}'), 
-                                    dmc.Text(f'RR-min epochy: {stats["epochy_RR-min"]} z {pocet_epoch}'),
-                                    dmc.Text(f'RR-max epochy: {stats["epochy_RR-max"]} z {pocet_epoch}'),
-                                    dmc.Text(f'SDNN epochy: {stats["epochy_SDNN"]} z {pocet_epoch}'),
-                                    dmc.Text(f'RMSSD epochy: {stats["epochy_RMSSD"]} z {pocet_epoch}'),
-                                    dmc.Text(f'FlexDeriv epochy: {stats["epochy_FlexDer"]} z {pocet_epoch}'),
+                                    dmc.Text("Nadlimitní epochy:"), 
+
+                                    dmc.Group([dmc.Space(w=20),
+                                               dmc.Text(f'Arytmie: {stats["arytmie"]}/{pocet_epoch} [{(round(stats["arytmie"]/pocet_epoch*100))} %]')]),
+
+                                    dmc.Group([dmc.Space(w=20),
+                                               dmc.Text(f'RR-min: {stats["epochy_RR-min"]}/{pocet_epoch} [{(round(stats["epochy_RR-min"]/pocet_epoch*100))} %]')]),
+                                    
+                                    dmc.Group([dmc.Space(w=20),
+                                               dmc.Text(f'Arytmie: {stats["epochy_RR-max"]}/{pocet_epoch} [{(round(stats["epochy_RR-max"]/pocet_epoch*100))} %]')]),
+
+                                    dmc.Group([dmc.Space(w=20),
+                                               dmc.Text(f'SDNN: {stats["epochy_SDNN"]}/{pocet_epoch} [{(round(stats["epochy_SDNN"]/pocet_epoch*100))} %]')]),
+
+                                    dmc.Group([dmc.Space(w=20),
+                                               dmc.Text(f'RMSSD: {stats["epochy_RMSSD"]}/{pocet_epoch} [{(round(stats["epochy_RMSSD"]/pocet_epoch*100))} %]')]),
+                                    
+                                    dmc.Group([dmc.Space(w=20),
+                                               dmc.Text(f'FlexDer: {stats["epochy_FlexDer"]}/{pocet_epoch} [{(round(stats["epochy_FlexDer"]/pocet_epoch*100))} %]')]),       
                                 ]
                             )
-                            
                         ]
-                
 
                 for i in range(len(inputs)-2):
                     if i == 0:
@@ -457,7 +471,7 @@ class DashCallbacks(Utils):
                 self.fig.add_trace(go.Scattergl(name=f"EKG EPOCHA {cislo_epochy}"), hf_x=ekg_epocha_cz, hf_y=ekg_epocha)
                 
 
-                self.fig.update_layout(template="plotly_dark")
+                self.fig.update_layout(template="plotly_dark", margin=dict(l=125, r=0, t=0, b=50))
 
                 
                 return self.fig
