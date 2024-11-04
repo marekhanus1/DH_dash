@@ -41,7 +41,7 @@ def show_epochy():
             dmc.NumberInput(label="Maximální hodnota RR", id="epochy_RRmax", value=config.get("RR_max")),
             dmc.NumberInput(label="Maximální hodnota SDNN", id="epochy_SDNN", value=config.get("SDNN")),
             dmc.NumberInput(label="Maximální hodnota RMSSD", id="epochy_RMSSD", value=config.get("RMSSD")),
-            dmc.NumberInput(label="Maximální hodnota FlexDeriv", id="epochy_FlexDeriv", value=config.get("FlexDeriv")),
+            dmc.NumberInput(label="Maximální hodnota FlexDeriv", id="epochy_FlexDeriv", value=config.get("FlexDer")),
         ]),
         dmc.Space(h=10),
 

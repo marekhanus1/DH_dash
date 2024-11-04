@@ -56,8 +56,5 @@ DashMain()
 
 
 # TODO
-# Tlačítko pro rychlé ukončení měření a zapnutí nového - hotovo
-# Výběr datumu přes dmc.Select - hotovo
-# Nastavení dynamického okna grafu v epochách / Změna vizuálu + pohyb mezi epochami přes šipky - hotovo
-# Přidání počtu překročených kritérií a aritmetických epoch - hotovo
-# Pík analyzér atd.
+# Přidat atribut vyhodnocení do epoch (Arytmie, Sinus, Nevyhodnoceno) + klávesové zkratky
+# Pík analyzér 

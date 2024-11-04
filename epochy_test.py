@@ -1,6 +1,6 @@
 
 import dash
-from dash import dcc, html, dash_table, no_update, callback_context
+from dash import dcc, html, dash_table, no_update, callback_context, ctx
 import dash_mantine_components as dmc
 from dash_resizable_panels import PanelGroup, Panel, PanelResizeHandle
 import pandas as pd
@@ -77,6 +77,7 @@ columnDefs = [
     {"headerName": "RMSSD", 'field': 'epochy_RMSSD'},
     {"headerName": "FlexDer", 'field': 'epochy_FlexDer' },
     {"headerName": "Arytmie", 'field': 'arytmie'},
+    {'headerName': 'Hodnocení', 'field': 'hodnoceni', 'editable': True}
     
 ]
 
@@ -192,7 +193,14 @@ epochy_maindiv = html.Div([
     # Main layout
     html.Div([
         
-        dcc.Graph(id="epochy_graph",figure=go.Figure(data=None, layout=dict(template='plotly_dark', margin=dict(l=125, r=0, t=0, b=50))),  style={"height":"50vh", "zoom": 1})   
+        dcc.Graph(id="epochy_graph",figure=go.Figure(data=None, layout=dict(template='plotly_dark', margin=dict(l=125, r=0, t=0, b=50))),  style={"height":"50vh", "zoom": 1}),
+        dmc.Group([
+            html.Button("Set Category A", id="epochy_category_a", n_clicks=0, style={"display": "none"}),
+            html.Button("Set Category S", id="epochy_category_s", n_clicks=0, style={"display": "none"}),
+            html.Button("Set Category N", id="epochy_category_n", n_clicks=0, style={"display": "none"}),
+            html.Button("Reset graph", id="epochy_reset_button", n_clicks=0, style={"display": "none"}),
+            html.Button("Arrow keys", id="epochy_arrowkeys_button", n_clicks=0, style={"display": "none"}),
+        ])
     ], style={"height": "50vh"})
 ])
 
@@ -334,8 +342,107 @@ def epochy_set_limits(*inputs):
         return no_update, no_update, no_update
 
 
+app.clientside_callback(
+    """
+        function(id) {
+            document.addEventListener("keydown", function(event) {
+                
+                // Kategorie pro epochy
+                if (event.key == 'a') {
+                    document.getElementById('epochy_category_a').click()
+                }
+                if (event.key == 's') {
+                    document.getElementById('epochy_category_s').click()
+                }
+                if (event.key == 'n') {
+                    document.getElementById('epochy_category_n').click()
+                };
+                
+                // Reset zoomu grafu
+                if (event.key == 'h' || event.key == 'r') {
+                    document.getElementById('epochy_reset_button').click()
+                }
+                
+                if (event.key == 'ArrowDown') {
+                    // Logic to select the row below by row-index value
+                    let selectedRow = document.querySelector('.ag-row-selected');
+                    if (selectedRow) {
+                        let rowIndex = parseInt(selectedRow.getAttribute('row-index'));
+                        let nextRow = document.querySelector(`.ag-row[row-index="${rowIndex + 1}"]`);
+                        if (nextRow) {
+                            nextRow.click();
+                        }
+                    }
+                    
+                }
+                if (event.key == 'ArrowUp') {
+                    
+                    // Logic to select the row above by row-index value
+                    let selectedRow = document.querySelector('.ag-row-selected');
+                    if (selectedRow) {
+                        let rowIndex = parseInt(selectedRow.getAttribute('row-index'));
+                        let prevRow = document.querySelector(`.ag-row[row-index="${rowIndex - 1}"]`);
+                        if (prevRow) {
+                            prevRow.click();
+                        }
+                    }
+                }
+                
+            });
+            return window.dash_clientside.no_update       
+        }
+    """,
+    Output("epochy_category_a", "id"),
+    Input("epochy_category_a", "id")
+)
+
+# Callback to handle button clicks and update the category, then select the row below it, so it's easier for user.
+@app.callback(
+    [Output('epochy_gridtable', 'rowData', allow_duplicate=True), Output("epochy_gridtable", "selectedRows")],
+    Input('epochy_category_a', 'n_clicks'),
+    Input('epochy_category_s', 'n_clicks'),
+    Input('epochy_category_n', 'n_clicks'),
+    State('epochy_gridtable', 'selectedRows'),
+    State('epochy_gridtable', 'rowData'), 
+    prevent_initial_call=True
+)
+def set_category(n_clicks_a, n_clicks_s, n_clicks_n, selected_rows, row_data):
+    if not selected_rows:
+        return no_update  # No row selected, return current data unchanged
+
+    print(ctx.triggered_id, selected_rows[0]['Číslo epochy'])
+
+    # Determine which button was clicked
+    category = None
+    if ctx.triggered_id == "epochy_category_a":
+        category = 'A'
+    elif ctx.triggered_id == "epochy_category_s":
+        category = 'S'
+    elif ctx.triggered_id == "epochy_category_n":
+        category = 'N'
+        
+    # Update the category in the selected row
+    row_data[selected_rows[0]['Číslo epochy'] - 1]["hodnoceni"] = category
+    
+    # Find the index of the selected row in the current sorted order
+    selected_index = next(i for i, row in enumerate(row_data) if row['Číslo epochy'] == selected_rows[0]['Číslo epochy'])
+
+    print([row_data[selected_index]])
+    print(row_data[selected_index])
+    return row_data, [row_data[selected_index]]
 
 
+@app.callback(
+    Output('epochy_graph', 'figure', allow_duplicate=True),
+    Input('epochy_reset_button', 'n_clicks'),
+    prevent_initial_call=True
+)
+def reset_axes(n_clicks):
+    # Update axes to autorange
+    global fig
+    fig.update_xaxes(autorange=True)
+    fig.update_yaxes(autorange=True)
+    return fig
 
 @app.callback(
     Output("epochy_graph", "figure"),
@@ -370,7 +477,7 @@ def epochy_show_chart(selection):
     else:
         return no_update
 
-    
+
 fig.register_update_graph_callback(app=app, graph_id="graph-id")
 fig.register_update_graph_callback(app=app, graph_id="epochy_graph")
 
