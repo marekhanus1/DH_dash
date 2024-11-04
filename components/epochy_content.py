@@ -106,6 +106,9 @@ def show_epochy():
                 html.Button("Set Category A", id="epochy_category_a", n_clicks=0, style={"display": "none"}),
                 html.Button("Set Category S", id="epochy_category_s", n_clicks=0, style={"display": "none"}),
                 html.Button("Set Category N", id="epochy_category_n", n_clicks=0, style={"display": "none"}),
+                html.Button("Set Category A", id="epochy_category_a_shift", n_clicks=0, style={"display": "none"}),
+                html.Button("Set Category S", id="epochy_category_s_shift", n_clicks=0, style={"display": "none"}),
+                html.Button("Set Category N", id="epochy_category_n_shift", n_clicks=0, style={"display": "none"}),
                 html.Button("Reset graph", id="epochy_reset_button", n_clicks=0, style={"display": "none"}),
                 html.Button("Arrow keys", id="epochy_arrowkeys_button", n_clicks=0, style={"display": "none"}),
             ])

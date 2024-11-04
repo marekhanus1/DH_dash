@@ -18,7 +18,7 @@ time_names = ["ekgtime", "flextime", "epochy_time", "HR_RESP_time"]
 
 maindiv = html.Div([
                 dcc.Graph(id="graph-id",figure=go.Figure(data=None, layout=dict(template='plotly_dark')),  style={"height":900, "width":"100%", "zoom": 1}),
-            
+                html.Button("Reset graph", id="vysledky_reset_button", n_clicks=0, style={"display": "none"}),
         ], id="main-chart-div", style={"height":900, "width":"100%", "zoom": 1})
 
 def create_plot_form(names):

@@ -108,3 +108,32 @@ class VysledkyCallbacks(Utils):
                 return self.fig, status_update
             else:
                 return no_update, no_update
+            
+
+        self.app.clientside_callback(
+            """
+                function(id) {
+                    document.addEventListener("keydown", function(event) {
+                        
+                        // Reset zoomu grafu
+                        if (event.key == 'h' || event.key == 'r') {
+                            document.getElementById('vysledky_reset_button').click()
+                        }
+                    });
+                    return window.dash_clientside.no_update       
+                }
+            """,
+            Output("vysledky_reset_button", "id"),
+            Input("vysledky_reset_button", "id")
+        )
+
+        @self.app.callback(
+            Output('graph-id', 'figure', allow_duplicate=True),
+            Input('vysledky_reset_button', 'n_clicks'),
+            prevent_initial_call=True
+        )
+        def reset_axes(n_clicks):
+            # Update axes to autorange
+            self.fig.update_xaxes(autorange=True)
+            self.fig.update_yaxes(autorange=True)
+            return self.fig

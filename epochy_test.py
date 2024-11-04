@@ -200,6 +200,9 @@ epochy_maindiv = html.Div([
             html.Button("Set Category A", id="epochy_category_a", n_clicks=0, style={"display": "none"}),
             html.Button("Set Category S", id="epochy_category_s", n_clicks=0, style={"display": "none"}),
             html.Button("Set Category N", id="epochy_category_n", n_clicks=0, style={"display": "none"}),
+            html.Button("Set Category A", id="epochy_category_a_shift", n_clicks=0, style={"display": "none"}),
+            html.Button("Set Category S", id="epochy_category_s_shift", n_clicks=0, style={"display": "none"}),
+            html.Button("Set Category N", id="epochy_category_n_shift", n_clicks=0, style={"display": "none"}),
             html.Button("Reset graph", id="epochy_reset_button", n_clicks=0, style={"display": "none"}),
             html.Button("Arrow keys", id="epochy_arrowkeys_button", n_clicks=0, style={"display": "none"}),
         ])
@@ -296,6 +299,8 @@ def epochy_set_limits(*inputs):
 
         # Calculate "Arytmie" column
         epochy_data['arytmie'] = epochy_data.apply(check_arytmie, axis=1)
+        epochy_data["hodnoceni"] = ""
+
         pocet_epoch = len(epochy_data["arytmie"])
         
         
@@ -350,18 +355,39 @@ app.clientside_callback(
             document.addEventListener("keydown", function(event) {
                 
                 // Kategorie pro epochy
-                if (event.key == 'a') {
-                    document.getElementById('epochy_category_a').click()
+                if(event.shiftKey) // Write all empty cells with category
+                {
+                    if (event.key.toLowerCase() == 'a') {
+                        document.getElementById('epochy_category_a_shift').click()
+                    }
+                    if (event.key.toLowerCase() == 's') {
+                        document.getElementById('epochy_category_s_shift').click()
+                    }
+                    if (event.key.toLowerCase() == 'n') {
+                        document.getElementById('epochy_category_n_shift').click()
+                    }
                 }
-                if (event.key == 's') {
-                    document.getElementById('epochy_category_s').click()
+                else // Write only selected cell with category
+                {
+                    if (event.key.toLowerCase() == 'a') {
+                        document.getElementById('epochy_category_a').click()
+                    }
+                    if (event.key.toLowerCase() == 's') {
+                        document.getElementById('epochy_category_s').click()
+                    }
+                    if (event.key.toLowerCase() == 'n') {
+                        document.getElementById('epochy_category_n').click()
+                    };
                 }
-                if (event.key == 'n') {
-                    document.getElementById('epochy_category_n').click()
-                };
+                
+                // If keys = SHIFT + S, save the data
+                if (event.shiftKey && event.key.toLowerCase() == 's') {
+                    document.getElementById('epochy_save').click()
+                }
+
                 
                 // Reset zoomu grafu
-                if (event.key == 'h' || event.key == 'r') {
+                if (event.key.toLowerCase() == 'h' || event.key.toLowerCase() == 'r') {
                     document.getElementById('epochy_reset_button').click()
                 }
                 
@@ -389,10 +415,7 @@ app.clientside_callback(
                         }
                     }
                 }
-                // If keys = SHIFT + S, save the data
-                if (event.shiftKey && event.key == 'S') {
-                    document.getElementById('epochy_save').click()
-                }
+                
                 
             });
             return window.dash_clientside.no_update       
@@ -462,6 +485,40 @@ def set_category(n_clicks_a, n_clicks_s, n_clicks_n, selected_rows, row_data):
     print(row_data[selected_index])
     return row_data, [row_data[selected_index]], DashIconify(icon="la:save", width=40, id="epochy_save_icon")
 
+
+# Write category to all empty cells
+@app.callback(
+    [Output('epochy_gridtable', 'rowData', allow_duplicate=True), Output("epochy_gridtable", "selectedRows", allow_duplicate=True), Output("epochy_save", "children", allow_duplicate=True)],
+    Input('epochy_category_a_shift', 'n_clicks'),
+    Input('epochy_category_s_shift', 'n_clicks'),
+    Input('epochy_category_n_shift', 'n_clicks'),
+    State('epochy_gridtable', 'selectedRows'),
+    State('epochy_gridtable', 'rowData'), 
+    prevent_initial_call=True
+)
+def set_empty_category(n_clicks_a, n_clicks_s, n_clicks_n, selected_rows, row_data):
+    if not selected_rows:
+        return no_update, no_update, no_update
+    
+    category = None
+    if ctx.triggered_id == "epochy_category_a_shift":
+        category = 'A'
+    elif ctx.triggered_id == "epochy_category_s_shift":
+        category = 'S'
+    elif ctx.triggered_id == "epochy_category_n_shift":
+        category = 'N'
+
+    # See which rows are empty
+    empty_rows = [row for row in row_data if (row["hodnoceni"] == None or row["hodnoceni"] == "")]
+    for row in empty_rows:
+        row["hodnoceni"] = category
+
+    # Connect empty rows with row_data
+    for row in empty_rows:
+        row_data[row["Číslo epochy"] - 1] = row
+    return row_data, no_update, DashIconify(icon="la:save", width=40, id="epochy_save_icon")
+    
+    
 
 @app.callback(
     Output('epochy_graph', 'figure', allow_duplicate=True),
