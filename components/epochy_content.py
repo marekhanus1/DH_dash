@@ -7,18 +7,19 @@ from dash_iconify import DashIconify
 from components.utils import Utils
 
 columnDefs = [
-        {"headerName": "Číslo epochy", 'field': 'Číslo epochy'},
-        {"headerName": "Čas epochy", 'field': 'Čas epochy' },
-        {"headerName": "HR", 'field': 'epochy_HR'},
-        {"headerName": "RESP", 'field': 'epochy_RESP'},
-        {"headerName": "RR-min", 'field': 'epochy_RR-min'},
-        {"headerName": "RR-max", 'field': 'epochy_RR-max' },
-        {"headerName": "SDNN", 'field': 'epochy_SDNN' },
-        {"headerName": "RMSSD", 'field': 'epochy_RMSSD'},
-        {"headerName": "FlexDer", 'field': 'epochy_FlexDer' },
-        {"headerName": "Arytmie", 'field': 'arytmie'},
-        
-    ]
+    {"headerName": "Číslo epochy", 'field': 'Číslo epochy'},
+    {"headerName": "Čas epochy", 'field': 'Čas epochy' },
+    {"headerName": "HR", 'field': 'epochy_HR'},
+    {"headerName": "RESP", 'field': 'epochy_RESP'},
+    {"headerName": "RR-min", 'field': 'epochy_RR-min'},
+    {"headerName": "RR-max", 'field': 'epochy_RR-max' },
+    {"headerName": "SDNN", 'field': 'epochy_SDNN' },
+    {"headerName": "RMSSD", 'field': 'epochy_RMSSD'},
+    {"headerName": "FlexDer", 'field': 'epochy_FlexDer' },
+    {"headerName": "Arytmie", 'field': 'arytmie'},
+    {'headerName': 'Hodnocení', 'field': 'hodnoceni', 'editable': True}
+    
+]
 
 def show_epochy():
     config = Utils.read_config()
@@ -58,11 +59,13 @@ def show_epochy():
         dmc.Group([
             # Left icon (home)
             dcc.Link(
-                dmc.ActionIcon(DashIconify(icon="line-md:home-md", width=60), color="white", variant="subtle", size=80),
+                dmc.ActionIcon(DashIconify(icon="line-md:home-md", width=60), color="white", id="epochy_home", variant="subtle", size=80),
                 href="/",
                 style={"width": "80px", "display": "flex", "justify-content": "flex-start"}
             ),
             
+            dmc.ActionIcon(DashIconify(icon="la:save", width=40, id="epochy_save_icon"), color="white", id="epochy_save", variant="subtle", size=80),
+
             # Center title
             html.Div(
                 html.H1("Holter dekodér", style={"text-align": "center", "zoom": "1.2"}),
@@ -83,10 +86,6 @@ def show_epochy():
         ], justify="space_between", style={"height": "7.5vh", "width": "100vw", "padding": "0 2vw"}),
     ])
 
-
-
-
-
     
     epochy_maindiv = html.Div([
         dmc.Drawer(
@@ -102,7 +101,14 @@ def show_epochy():
         # Main layout
         html.Div([
             
-            dcc.Graph(id="epochy_graph",figure=go.Figure(data=None, layout=dict(template='plotly_dark', margin=dict(l=125, r=0, t=0, b=50))),  style={"height":"50vh", "zoom": 1})   
+            dcc.Graph(id="epochy_graph",figure=go.Figure(data=None, layout=dict(template='plotly_dark', margin=dict(l=125, r=0, t=0, b=50))),  style={"height":"50vh", "zoom": 1}),
+            dmc.Group([
+                html.Button("Set Category A", id="epochy_category_a", n_clicks=0, style={"display": "none"}),
+                html.Button("Set Category S", id="epochy_category_s", n_clicks=0, style={"display": "none"}),
+                html.Button("Set Category N", id="epochy_category_n", n_clicks=0, style={"display": "none"}),
+                html.Button("Reset graph", id="epochy_reset_button", n_clicks=0, style={"display": "none"}),
+                html.Button("Arrow keys", id="epochy_arrowkeys_button", n_clicks=0, style={"display": "none"}),
+            ])
         ], style={"height": "50vh"})
     ])
 

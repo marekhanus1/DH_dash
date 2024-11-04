@@ -19,7 +19,7 @@ from plotly.subplots import make_subplots
 
 _dash_renderer._set_react_version("18.2.0")
 
-# GRAF
+# Initialize the Dash app
 app = dash.Dash(__name__, external_stylesheets=dmc.styles.ALL, meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=2"},])
 
 data_names = np.array([["ekg", "ekgraw"],
@@ -114,11 +114,13 @@ header = html.Div([
     dmc.Group([
         # Left icon (home)
         dcc.Link(
-            dmc.ActionIcon(DashIconify(icon="line-md:home-md", width=60), color="white", variant="subtle", size=80),
+            dmc.ActionIcon(DashIconify(icon="line-md:home-md", width=60), color="white", id="epochy_home", variant="subtle", size=80),
             href="/",
             style={"width": "80px", "display": "flex", "justify-content": "flex-start"}
         ),
         
+        dmc.ActionIcon(DashIconify(icon="la:save", width=40, id="epochy_save_icon"), color="white", id="epochy_save", variant="subtle", size=80),
+
         # Center title
         html.Div(
             html.H1("Holter dekodér", style={"text-align": "center", "zoom": "1.2"}),
@@ -387,6 +389,10 @@ app.clientside_callback(
                         }
                     }
                 }
+                // If keys = SHIFT + S, save the data
+                if (event.shiftKey && event.key == 'S') {
+                    document.getElementById('epochy_save').click()
+                }
                 
             });
             return window.dash_clientside.no_update       
@@ -396,9 +402,34 @@ app.clientside_callback(
     Input("epochy_category_a", "id")
 )
 
+# Save data from table back into pandas dataframe than to csv
+@app.callback(
+    Output("epochy_save", "children"),
+    Input("epochy_save", "n_clicks"),
+    Input("epochy_home", "n_clicks"),
+    State("epochy_gridtable", "rowData"),
+    prevent_initial_call=True
+)
+def save_data(n_clicks, n_clicks_home, row_data):
+    print(ctx.triggered_id)
+
+    if ctx.triggered_id == "epochy_save":
+        print("Saving data...")
+        # Save data to csv
+        epochy_data = pd.DataFrame(row_data)
+        epochy_data.to_csv("epochy_data.csv", index=False) # TODO Change based on date
+        print("Data saved.")
+        return DashIconify(icon="dashicons:saved", width=40, id="epochy_save_icon") # change icon to saved
+    elif ctx.triggered_id == "epochy_home": 
+        epochy_data = pd.DataFrame(row_data) # Save data to DF
+        return dcc.Location(pathname="/", id="home")
+    else:
+        return no_update
+
+    
 # Callback to handle button clicks and update the category, then select the row below it, so it's easier for user.
 @app.callback(
-    [Output('epochy_gridtable', 'rowData', allow_duplicate=True), Output("epochy_gridtable", "selectedRows")],
+    [Output('epochy_gridtable', 'rowData', allow_duplicate=True), Output("epochy_gridtable", "selectedRows"), Output("epochy_save", "children", allow_duplicate=True)],
     Input('epochy_category_a', 'n_clicks'),
     Input('epochy_category_s', 'n_clicks'),
     Input('epochy_category_n', 'n_clicks'),
@@ -408,7 +439,7 @@ app.clientside_callback(
 )
 def set_category(n_clicks_a, n_clicks_s, n_clicks_n, selected_rows, row_data):
     if not selected_rows:
-        return no_update  # No row selected, return current data unchanged
+        return no_update, no_update, no_update  # No row selected, return current data unchanged
 
     print(ctx.triggered_id, selected_rows[0]['Číslo epochy'])
 
@@ -429,7 +460,7 @@ def set_category(n_clicks_a, n_clicks_s, n_clicks_n, selected_rows, row_data):
 
     print([row_data[selected_index]])
     print(row_data[selected_index])
-    return row_data, [row_data[selected_index]]
+    return row_data, [row_data[selected_index]], DashIconify(icon="la:save", width=40, id="epochy_save_icon")
 
 
 @app.callback(

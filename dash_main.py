@@ -56,5 +56,7 @@ DashMain()
 
 
 # TODO
-# Přidat atribut vyhodnocení do epoch (Arytmie, Sinus, Nevyhodnoceno) + klávesové zkratky
+# Přidat atribut vyhodnocení do epoch (Arytmie, Sinus, Nevyhodnoceno) - DONE
+#   + klávesové zkratky - DONE
+#   + save do csv
 # Pík analyzér 
