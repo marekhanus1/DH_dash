@@ -206,7 +206,7 @@ epochy_maindiv = html.Div([
             html.Button("Reset graph", id="epochy_reset_button", n_clicks=0, style={"display": "none"}),
             html.Button("Arrow keys", id="epochy_arrowkeys_button", n_clicks=0, style={"display": "none"}),
         ])
-    ], style={"height": "50vh"})
+    ])
 ])
 
 
@@ -228,7 +228,7 @@ app.layout = dmc.MantineProvider(
     children=html.Div([
         #header
         epochy_appshell
-    ], id="main-div")
+    ], id="main-div"),
 )
 
 @app.callback(
@@ -451,6 +451,7 @@ def save_data(n_clicks, n_clicks_home, row_data):
 
     
 # Callback to handle button clicks and update the category, then select the row below it, so it's easier for user.
+# I need to move cell focus to the next row after setting the category
 @app.callback(
     [Output('epochy_gridtable', 'rowData', allow_duplicate=True), Output("epochy_gridtable", "selectedRows"), Output("epochy_save", "children", allow_duplicate=True)],
     Input('epochy_category_a', 'n_clicks'),

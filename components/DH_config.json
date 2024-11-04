@@ -1,5 +1,5 @@
 {
-    "date": "241007",
+    "date": "241008",
     "ssh": false,
     "rangeSW": false,
     "rangeMax": 1020,
@@ -19,5 +19,5 @@
     "SDNN": 500,
     "RMSSD": 500,
     "FlexDeriv": 30,
-    "FlexDer": 30
+    "FlexDer": 29
 }

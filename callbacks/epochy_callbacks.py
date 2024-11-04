@@ -91,7 +91,11 @@ class EpochyCallbacks(Utils):
 
                 # Calculate "Arytmie" column
                 self.epochy_data['arytmie'] = self.epochy_data.apply(check_arytmie, axis=1)
-                self.epochy_data["hodnoceni"] = ""
+
+                # If hodnoceni is not in the dataframe, add it
+                if "hodnoceni" not in self.epochy_data.columns:
+                    self.epochy_data["hodnoceni"] = ""
+                
 
                 pocet_epoch = len(self.epochy_data["arytmie"])
                 
@@ -224,6 +228,7 @@ class EpochyCallbacks(Utils):
                             document.getElementById('epochy_reset_button').click()
                         }
                         
+                        /*
                         if (event.key == 'ArrowDown') {
                             // Logic to select the row below by row-index value
                             let selectedRow = document.querySelector('.ag-row-selected');
@@ -248,7 +253,7 @@ class EpochyCallbacks(Utils):
                                 }
                             }
                         }
-                        
+                        */
                         
                     });
                     return window.dash_clientside.no_update       
@@ -320,9 +325,12 @@ class EpochyCallbacks(Utils):
             # Find the index of the selected row in the current sorted order
             selected_index = next(i for i, row in enumerate(row_data) if row['Číslo epochy'] == selected_rows[0]['Číslo epochy'])
 
+            # Select the row below the current one
+            row_below = row_data[selected_index + 1] if selected_index < len(row_data) - 1 else row_data[selected_index]
             print([row_data[selected_index]])
-            print(row_data[selected_index])
-            return row_data, [row_data[selected_index]], DashIconify(icon="la:save", width=40, id="epochy_save_icon")
+
+
+            return row_data, [row_below], DashIconify(icon="la:save", width=40, id="epochy_save_icon")
 
 
         # Write category to all empty cells

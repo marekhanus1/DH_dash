@@ -56,6 +56,8 @@ DashMain()
 
 
 # TODO
+# POHYB V TABULCE JE K HOVNU
+
 # Přidat atribut vyhodnocení do epoch (Arytmie, Sinus, Nevyhodnoceno) - DONE
 #   + klávesové zkratky - DONE
 #   + save do csv
