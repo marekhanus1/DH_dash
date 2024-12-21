@@ -177,6 +177,11 @@ class EpochyCallbacks(Utils):
                                         yaxis=dict(
                                             titlefont=dict(size=18),  # Y axis title font size
                                             tickfont=dict(size=16)    # Y axis tick font size
+                                        ),
+                                        hoverlabel=dict(
+                                            font=dict(
+                                                size=20  # Change this to your desired font size
+                                            )
                                         )
                                     )
 
@@ -185,7 +190,6 @@ class EpochyCallbacks(Utils):
             else:
                 return no_update
             
-
         self.app.clientside_callback(
             """
                 function(id) {
@@ -262,7 +266,6 @@ class EpochyCallbacks(Utils):
             Output("epochy_category_a", "id"),
             Input("epochy_category_a", "id")
         )
-
         # Save data from table back into pandas dataframe than to csv
         @self.app.callback(
             Output("epochy_save", "children"),
@@ -292,19 +295,21 @@ class EpochyCallbacks(Utils):
                 return no_update #dcc.Location(pathname="/", id="home")
             else:
                 return no_update
-
             
         # Callback to handle button clicks and update the category, then select the row below it, so it's easier for user.
+        
         @self.app.callback(
-            [Output('epochy_gridtable', 'rowData', allow_duplicate=True), Output("epochy_gridtable", "selectedRows"), Output("epochy_save", "children", allow_duplicate=True)],
+            [Output('epochy_gridtable', 'rowData', allow_duplicate=True), Output("epochy_gridtable", "selectedRows"), Output("epochy_save", "children", allow_duplicate=True), Output("epochy_gridtable", "scrollTo")],
             Input('epochy_category_a', 'n_clicks'),
             Input('epochy_category_s', 'n_clicks'),
             Input('epochy_category_n', 'n_clicks'),
             State('epochy_gridtable', 'selectedRows'),
-            State('epochy_gridtable', 'rowData'), 
+            State('epochy_gridtable', 'rowData'),
+            State("epochy_gridtable", "scrollTo"), 
             prevent_initial_call=True
         )
-        def set_category(n_clicks_a, n_clicks_s, n_clicks_n, selected_rows, row_data):
+        def set_category(n_clicks_a, n_clicks_s, n_clicks_n, selected_rows, row_data, scroll_to):
+            
             if not selected_rows:
                 return no_update, no_update, no_update  # No row selected, return current data unchanged
 
@@ -327,11 +332,18 @@ class EpochyCallbacks(Utils):
 
             # Select the row below the current one
             row_below = row_data[selected_index + 1] if selected_index < len(row_data) - 1 else row_data[selected_index]
-            print([row_data[selected_index]])
+            print(row_below)
 
-
-            return row_data, [row_below], DashIconify(icon="la:save", width=40, id="epochy_save_icon")
-
+            return row_data, [row_below], DashIconify(icon="la:save", width=40, id="epochy_save_icon"), {"data": row_below}
+        
+        @self.app.callback(
+            Output('epochy_gridtable', 'scrollTo', allow_duplicate=True),
+            Input('epochy_gridtable', 'scrollTo'),
+            prevent_initial_call=True
+        )
+        def scroll_to_row(scroll_to):
+            print(f"SCROLL TO: {scroll_to}")
+            return scroll_to | {'rowPosition': 'middle'}
 
         # Write category to all empty cells
         @self.app.callback(

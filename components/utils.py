@@ -171,7 +171,7 @@ class Utils():
         
             return datum_content
         elif value == "jine":
-            datum_content = dmc.DatePicker(
+            datum_content = dmc.DatePickerInput(
                         id="datum_input",
                         value=datetime.today(), leftSection=DashIconify(icon="clarity:date-line"), w=300,
                         valueFormat="DD. M. YYYY",

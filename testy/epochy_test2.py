@@ -77,7 +77,7 @@ columnDefs = [
     {"headerName": "RMSSD", 'field': 'epochy_RMSSD'},
     {"headerName": "FlexDer", 'field': 'epochy_FlexDer' },
     {"headerName": "Arytmie", 'field': 'arytmie'},
-    {'headerName': 'Hodnocení', 'field': 'hodnoceni', 'editable': True}
+    {'headerName': 'Hodnocení', 'field': 'hodnoceni', "cellRenderer": "agAnimateShowChangeCellRenderer",}
     
 ]
 
@@ -88,7 +88,9 @@ tabulka = dag.AgGrid(
     columnSize="sizeToFit",
     style={"height": "40vh", "width": "100%"},
     defaultColDef={"filter": True},
-    dashGridOptions = {'rowSelection': 'single', 'animateRows': False}
+    dashGridOptions={"rowSelection": "single"},
+    getRowId="params.data.Číslo epochy",
+    #
 )
 
 epochy_nastaveni_content = html.Div([
@@ -231,6 +233,7 @@ app.layout = dmc.MantineProvider(
     ], id="main-div"),
 )
 
+
 @app.callback(
     Output("epochy_drawer", "opened"),
     Input("epochy_nastaveni", "n_clicks"),
@@ -349,6 +352,8 @@ def epochy_set_limits(*inputs):
         return no_update, no_update, no_update
 
 
+
+
 app.clientside_callback(
     """
         function(id) {
@@ -390,7 +395,7 @@ app.clientside_callback(
                 if (event.key.toLowerCase() == 'h' || event.key.toLowerCase() == 'r') {
                     document.getElementById('epochy_reset_button').click()
                 }
-                
+                /*
                 if (event.key == 'ArrowDown') {
                     // Logic to select the row below by row-index value
                     let selectedRow = document.querySelector('.ag-row-selected');
@@ -415,7 +420,7 @@ app.clientside_callback(
                         }
                     }
                 }
-                
+                */
                 
             });
             return window.dash_clientside.no_update       
@@ -425,45 +430,23 @@ app.clientside_callback(
     Input("epochy_category_a", "id")
 )
 
-# Save data from table back into pandas dataframe than to csv
-@app.callback(
-    Output("epochy_save", "children"),
-    Input("epochy_save", "n_clicks"),
-    Input("epochy_home", "n_clicks"),
-    State("epochy_gridtable", "rowData"),
-    prevent_initial_call=True
-)
-def save_data(n_clicks, n_clicks_home, row_data):
-    print(ctx.triggered_id)
 
-    if ctx.triggered_id == "epochy_save":
-        print("Saving data...")
-        # Save data to csv
-        epochy_data = pd.DataFrame(row_data)
-        epochy_data.to_csv("epochy_data.csv", index=False) # TODO Change based on date
-        print("Data saved.")
-        return DashIconify(icon="dashicons:saved", width=40, id="epochy_save_icon") # change icon to saved
-    elif ctx.triggered_id == "epochy_home": 
-        epochy_data = pd.DataFrame(row_data) # Save data to DF
-        return dcc.Location(pathname="/", id="home")
-    else:
-        return no_update
 
-    
 # Callback to handle button clicks and update the category, then select the row below it, so it's easier for user.
 # I need to move cell focus to the next row after setting the category
 @app.callback(
-    [Output('epochy_gridtable', 'rowData', allow_duplicate=True), Output("epochy_gridtable", "selectedRows"), Output("epochy_save", "children", allow_duplicate=True)],
+    [Output('epochy_gridtable', 'rowTransaction'), Output("epochy_save", "children", allow_duplicate=True)], #  Output("epochy_gridtable", "selectedRows"),
     Input('epochy_category_a', 'n_clicks'),
     Input('epochy_category_s', 'n_clicks'),
     Input('epochy_category_n', 'n_clicks'),
     State('epochy_gridtable', 'selectedRows'),
-    State('epochy_gridtable', 'rowData'), 
+    State('epochy_gridtable', 'rowData'),
     prevent_initial_call=True
 )
 def set_category(n_clicks_a, n_clicks_s, n_clicks_n, selected_rows, row_data):
+
     if not selected_rows:
-        return no_update, no_update, no_update  # No row selected, return current data unchanged
+        return no_update, no_update  # No row selected, return current data unchanged
 
     print(ctx.triggered_id, selected_rows[0]['Číslo epochy'])
 
@@ -476,62 +459,16 @@ def set_category(n_clicks_a, n_clicks_s, n_clicks_n, selected_rows, row_data):
     elif ctx.triggered_id == "epochy_category_n":
         category = 'N'
         
-    # Update the category in the selected row
-    row_data[selected_rows[0]['Číslo epochy'] - 1]["hodnoceni"] = category
-    
-    # Find the index of the selected row in the current sorted order
-    selected_index = next(i for i, row in enumerate(row_data) if row['Číslo epochy'] == selected_rows[0]['Číslo epochy'])
+    updated_rows = []
 
-    print([row_data[selected_index]])
-    print(row_data[selected_index])
-    return row_data, [row_data[selected_index]], DashIconify(icon="la:save", width=40, id="epochy_save_icon")
+    updated_row = selected_rows[0].copy()
+    updated_row['hodnoceni'] = random.randint(1,50)  # Set age to 40 or any desired value
+    updated_rows.append(updated_row)
 
+    print(updated_rows)
 
-# Write category to all empty cells
-@app.callback(
-    [Output('epochy_gridtable', 'rowData', allow_duplicate=True), Output("epochy_gridtable", "selectedRows", allow_duplicate=True), Output("epochy_save", "children", allow_duplicate=True)],
-    Input('epochy_category_a_shift', 'n_clicks'),
-    Input('epochy_category_s_shift', 'n_clicks'),
-    Input('epochy_category_n_shift', 'n_clicks'),
-    State('epochy_gridtable', 'selectedRows'),
-    State('epochy_gridtable', 'rowData'), 
-    prevent_initial_call=True
-)
-def set_empty_category(n_clicks_a, n_clicks_s, n_clicks_n, selected_rows, row_data):
-    if not selected_rows:
-        return no_update, no_update, no_update
-    
-    category = None
-    if ctx.triggered_id == "epochy_category_a_shift":
-        category = 'A'
-    elif ctx.triggered_id == "epochy_category_s_shift":
-        category = 'S'
-    elif ctx.triggered_id == "epochy_category_n_shift":
-        category = 'N'
+    return {'update': updated_rows}, DashIconify(icon="dashicons:saved", width=40, id="epochy_save_icon")
 
-    # See which rows are empty
-    empty_rows = [row for row in row_data if (row["hodnoceni"] == None or row["hodnoceni"] == "")]
-    for row in empty_rows:
-        row["hodnoceni"] = category
-
-    # Connect empty rows with row_data
-    for row in empty_rows:
-        row_data[row["Číslo epochy"] - 1] = row
-    return row_data, no_update, DashIconify(icon="la:save", width=40, id="epochy_save_icon")
-    
-    
-
-@app.callback(
-    Output('epochy_graph', 'figure', allow_duplicate=True),
-    Input('epochy_reset_button', 'n_clicks'),
-    prevent_initial_call=True
-)
-def reset_axes(n_clicks):
-    # Update axes to autorange
-    global fig
-    fig.update_xaxes(autorange=True)
-    fig.update_yaxes(autorange=True)
-    return fig
 
 @app.callback(
     Output("epochy_graph", "figure"),
@@ -541,6 +478,7 @@ def reset_axes(n_clicks):
 )
 def epochy_show_chart(selection):
     ctx = callback_context
+    print(ctx.triggered)
     if len(ctx.triggered) and "epochy_gridtable" in ctx.triggered[0]["prop_id"] and len(ctx.triggered[0]["value"]) > 0:
         # Note how the replace method is used here on the global figure object
         global fig
@@ -559,15 +497,23 @@ def epochy_show_chart(selection):
         fig.add_trace(go.Scattergl(name=f"EKG EPOCHA {cislo_epochy}"), hf_x=ekg_epocha_cz, hf_y=ekg_epocha)
         
 
-        fig.update_layout(template="plotly_dark", margin=dict(l=125, r=0, t=0, b=50))
+        fig.update_layout(template="plotly_dark", margin=dict(l=125, r=0, t=0, b=50),
+                                       xaxis=dict(
+                                            titlefont=dict(size=18),  # X axis title font size
+                                            tickfont=dict(size=16)    # X axis tick font size
+                                        ),
+                                        yaxis=dict(
+                                            titlefont=dict(size=18),  # Y axis title font size
+                                            tickfont=dict(size=16)    # Y axis tick font size
+                                        )
+                                    )
 
         
         return fig
     else:
         return no_update
+    
 
-
-fig.register_update_graph_callback(app=app, graph_id="graph-id")
 fig.register_update_graph_callback(app=app, graph_id="epochy_graph")
 
 if __name__ == "__main__":

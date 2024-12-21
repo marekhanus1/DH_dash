@@ -7,11 +7,12 @@ import h5py
 # INICIALIZACE VEDLEJŠÍCH SOUBOURŮ
 from DH_vyhodnoceni.DH_read_and_decode import ReadAndDecode
 from DH_vyhodnoceni.DH_analyseHR import AnalyseHR
+from DH_vyhodnoceni.DH_analysePeaks import AnalysePeaks
 import DH_vyhodnoceni.download_files as download_files
 
 
 
-class DecodeHolter(ReadAndDecode, AnalyseHR):
+class DecodeHolter(ReadAndDecode, AnalyseHR, AnalysePeaks):
     def __init__(self, shared_data):
         self.shared_data = shared_data
 
@@ -19,6 +20,8 @@ class DecodeHolter(ReadAndDecode, AnalyseHR):
     def main(self, args):
         self.args = args
         self.filename = "Holter_" + self.args["date"] # ČASOVÁ ZNAČKA VÝSLEDKOVÝCH SOUBORŮ
+        
+        self.vzorkovaci_frekvence = 500 # VZORKOVACÍ FREKVENCE
         
         
         if(self.args["ssh"] == True): # STÁHNI SOUBORY Z RPi
@@ -73,7 +76,12 @@ class DecodeHolter(ReadAndDecode, AnalyseHR):
         self.analyze_HR()
         self.shared_data["stage"] = 5 # Fáze pět - analýza HR dokončena
 
+        print("ANALYZE PEAKS...")
+        self.peak_analysis()
+        self.shared_data["stage"] = 6 # Fáze šest - analýza píků dokončena
+        
         # Ulož data do paměti pro web
+        print("SAVE DATA...")
         with h5py.File("DH_data.h5", 'w') as f:
             # EKG hodnoty 
             f.create_dataset("ekg", data=self.ekg_values, compression="gzip")

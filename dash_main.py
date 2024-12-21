@@ -28,7 +28,7 @@ class DashMain(DashCallbacks):
 
         self.stage_num = 0
         self.path_name = ""
-
+        
         # Init Plotly Resampler 
         self.fig = FigureResampler(
             make_subplots(specs=[[{"secondary_y": True}]]),
@@ -50,15 +50,12 @@ class DashMain(DashCallbacks):
 
 
         if __name__ == '__main__':
-            self.app.run_server(debug=True, port=5000) #,dev_tools_ui=False,dev_tools_props_check=False
+            self.app.run_server(debug=True, port=5001) #,dev_tools_ui=False,dev_tools_props_check=False
 
 DashMain()
 
 
 # TODO
-# POHYB V TABULCE JE K HOVNU
-
-# Přidat atribut vyhodnocení do epoch (Arytmie, Sinus, Nevyhodnoceno) - DONE
-#   + klávesové zkratky - DONE
-#   + save do csv
+# POHYB V TABULCE JE K HOVNU - done?
+# Zvětšit labely v grafu - done
 # Pík analyzér 

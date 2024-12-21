@@ -93,7 +93,7 @@ class VysledkyCallbacks(Utils):
 
                 self.fig.update_layout(
                     height=900, 
-                    template="plotly_dark", 
+                    template="mantine_dark", 
                     xaxis=dict(
                         titlefont=dict(size=18),  # X axis title font size
                         tickfont=dict(size=16)    # X axis tick font size
@@ -102,6 +102,11 @@ class VysledkyCallbacks(Utils):
                         titlefont=dict(size=18),  # Y axis title font size
                         tickfont=dict(size=16)    # Y axis tick font size
                     ),
+                    hoverlabel=dict(
+                        font=dict(
+                            size=20  # Change this to your desired font size
+                        )
+                    )
                 )
 
                 status_update = "Graf nastaven!"
