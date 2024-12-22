@@ -10,10 +10,12 @@ class FormCallbacks(Utils):
         ##################################### FORM ##################################### 
         ##################################### FORM ##################################### 
         ##################################### FORM ##################################### 
+
+
         @self.app.callback(
-            [Output(component_id, 'darkHidden') for component_id in ['arg_butter', 'arg_vrub', 'arg_butterflex']] +
-            [Output('time_range_div', 'hidden')],
-            [Input(switch_id, 'checked') for switch_id in ['butter_switch', 'vrub_switch', 'butterflex_switch', 'range_switch']]
+            [Output(component_id, 'darkHidden') for component_id in ['arg_butter', 'arg_vrub', 'arg_butterflex', 'epoch_delka']] +
+            [Output('time_range_div', 'hidden'), Output('pik_time_range_div', 'hidden')],
+            [Input(switch_id, 'checked') for switch_id in ['butter_switch', 'vrub_switch', 'butterflex_switch', "epoch_switch", 'range_switch', "pik_switch"]]
         )
         def toggle_visibility(*switches):
             return [not switch for switch in switches]
@@ -40,7 +42,17 @@ class FormCallbacks(Utils):
         def update_output_time_range(value):
             start_time = self.minutes_to_time(value[0])
             end_time = self.minutes_to_time(value[1])
-            return f"Selected Time Range: {start_time} - {end_time}"
+            return f"Časové rozmezí vyhodnocení souboru: {start_time} - {end_time}"
+        
+        @self.app.callback(
+            Output('pik_output-time-range', 'children'),
+            [Input('pik_time-range-slider', 'value')]
+        )
+        def update_output_time_range(value):
+            start_time = self.minutes_to_time(value[0])
+            end_time = self.minutes_to_time(value[1])
+            return f"Časové rozmezí vyhodnocení píků: {start_time} - {end_time}"
+
 
         @self.app.callback(
             Output('main-div', 'children', allow_duplicate=True),
@@ -50,7 +62,7 @@ class FormCallbacks(Utils):
             [State('datum_input', 'value'), State('chbox_SSH', 'checked'), State('time-range-slider', 'value')]+ # Soubory
             [State('arg_limit', 'value'), State('arg_vrub', 'value'), State('arg_butter', 'value'), State('arg_flexprom', 'value'), State('arg_butterflex', 'value')]+ # filtry a limity
             [State('chbox_export', 'checked')]+
-            [State('epoch_delka', 'value')],
+            [State('epoch_delka', 'value'),  State('pik_time-range-slider', 'value'), State('epoch_switch', 'checked'),  State('pik_switch', 'checked')], # epochy a píky
             #[State('epochy_RRmin', 'checked'), State('epochy_RRmax', 'checked'),State('epochy_SDNN', 'checked'), State('epochy_RMSSD', 'checked')],
             
             prevent_initial_call=True
@@ -61,10 +73,11 @@ class FormCallbacks(Utils):
                 inputs = list(inputs) # n_clicks rangeSW, butterSW, vrubSW, flexbutterSW, date,    ssh, 
                                       #     7        8        9          10         11          12
                                       # range_val, limit, butter_val, vrub_val, frex_prom, flexbutter_val
-                                      #   
-                                      # export,    epoch_delka
+                                      #   13        14        15         16             17         
+                                      # export,  epoch_delka pik_range, epoch_switch, pik_switch
                 date_index = 5
                 range_index = 7
+                pik_range_index = 15
 
                 if len(inputs[date_index]) > 6:
                     inputs[date_index] = inputs[date_index][2:].replace("-", "") # Nastav formát datumu
@@ -72,19 +85,20 @@ class FormCallbacks(Utils):
                 config_names = ["rangeSW", "vrub_SW", "butter_SW", "flexbutter_sw",
                                 "date", "ssh", "rangeMax", "rangeMin", 
                                 "pik_limit", "butter_val", "vrub_val", "flex_prom", "flexbutter_val",
-                                "exportEKG", "epoch_delka"]
+                                "exportEKG", "epoch_delka",  "pik_rangeMax", "pik_rangeMin", "epoch_switch" , "pik_switch"]
                 
                 config = Utils.read_config()
                 
                 
                 index_push = 0
-                for i in range(len(config_names)-1):
-                    if i == range_index-1: # TIME RANGE
+                for i in range(len(config_names)-2):
+                    if i == range_index-1 or i == pik_range_index-1: # TIME RANGE
                         if inputs[i+index_push] != None:
-                            config[config_names[i]] = inputs[range_index][1]
-                            config[config_names[i+1]] = inputs[range_index][0]
+                            print(config_names[i+index_push])
+                            config[config_names[i+index_push]] = inputs[i+1][1]
+                            config[config_names[i+index_push+1]] = inputs[i+1][0]
                         
-                        index_push = 1
+                        index_push += 1
 
                     else:
                         if(inputs[i+1] != None):
@@ -97,20 +111,22 @@ class FormCallbacks(Utils):
 
                 # Hodnoty time_range, arg_butterworth, arg_vrub, arg_butterflex a epochy jsou neplatné jestli jejich switch není kladný
                 indexy_neplatnych_hodnot = [range_index, 9, 10, 12]
-                
 
                 for i, index in enumerate(indexy_neplatnych_hodnot):
                     if inputs[i+1] != True:
                         inputs[index] = None
 
-
+                if inputs[16] != True:
+                    inputs[14] = None
                 
-
-                if inputs[range_index] != None:
-                    start_time = self.minutes_to_time(inputs[range_index][0])
-                    end_time = self.minutes_to_time(inputs[range_index][1])
-                    inputs[range_index] = f"{start_time}-{end_time}"
-                #print(inputs)
+                if inputs[17] != True:
+                    inputs[15] = None
+                
+                for i in [range_index, pik_range_index]:
+                    if inputs[i] != None:
+                        start_time = self.minutes_to_time(inputs[i][0])
+                        end_time = self.minutes_to_time(inputs[i][1])
+                        inputs[i] = f"{start_time}-{end_time}"
 
 
 
@@ -118,7 +134,7 @@ class FormCallbacks(Utils):
                 arg_names = ["date", "ssh", "range",
                     "limit", "vrubovy", "butterworth", "flexprom", "flexbutter",
                     "export",
-                    "epocha"]
+                    "epocha", "pik_range"]
                 
                 self.create_args(arg_names) # Nastav hodnoty všech argumentů na None
 

@@ -2,12 +2,21 @@ from dash import Output, Input, State, no_update, callback_context, ctx
 from components.utils import Utils
 from components.layout_content import layout_content
 
-from components.vysledky_chart_content import data_names, time_names
-import pandas as pd
 
+import pandas as pd
+import numpy as np
 
 class VyhodnoceniCallbacks(Utils):
     def vyhodnoceni_callbacks(self):
+
+        self.folder_names = ["EKG", "FLEX", "HR A RESP", "EPOCHY"]
+        self.data_names = np.array([["ekg", "ekgraw"],
+                                    ["flex", "flexraw"],                             
+                                    ["HR", "RESP"]], dtype=object)
+
+        self.HR_names = np.array(["epochy_HR", "epochy_RESP", "epochy_RR-min", "epochy_RR-max", "epochy_SDNN", "epochy_RMSSD", "epochy_FlexDer"], dtype=object)
+        self.time_names = ["ekgtime", "flextime", "HR_RESP_time"]
+
         ##################################### VYHODNOCENI ##################################### 
         ##################################### VYHODNOCENI ##################################### 
         ##################################### VYHODNOCENI ##################################### 
@@ -77,16 +86,32 @@ class VyhodnoceniCallbacks(Utils):
                     
                     
                     
-                    self.data, self.time = self.read_hdf5_data(data_names, time_names)
-
-                    self.epochy_data = pd.DataFrame({k: self.data[k] for k in data_names[2]})
-                    cas_epochy = [i.strftime("%H:%M:%S") for i in self.time["epochy_time"]]
-                    self.epochy_data.insert(0, "Čas epochy", cas_epochy)
-                    self.epochy_data.insert(0, "Číslo epochy", range(1, len(self.epochy_data) + 1))
+                    self.data, self.time = self.read_hdf5_data(self.data_names, self.time_names)
+                    if self.args["epocha"] != None:
+                        self.epochy_data = pd.DataFrame({k: self.data[k] for k in self.data_names[2]})
+                        cas_epochy = [i.strftime("%H:%M:%S") for i in self.time["epochy_time"]]
+                        self.epochy_data.insert(0, "Čas epochy", cas_epochy)
+                        self.epochy_data.insert(0, "Číslo epochy", range(1, len(self.epochy_data) + 1))
                     
-                    return layout_content.decoding_done()
+                    return layout_content.decoding_done(self.args)
                     
                 else:
                     return no_update
             else:
                 return no_update
+            
+
+        @self.app.callback(
+        #[Output('output-div', 'children'), ],
+        
+        [Output('my-interval2', 'disabled'), Output("fileinfo_div", "children", allow_duplicate=True)],
+        Input('my-interval2', 'n_intervals'),
+        prevent_initial_call=True, 
+        suppress_callback_exceptions=True
+            
+        )
+        def interval_callback(n_clcik):
+            infodiv_content = self.handle_info()
+
+                
+            return True, infodiv_content

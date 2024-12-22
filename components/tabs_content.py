@@ -167,9 +167,43 @@ def show_tabs(disabled=False):
     tab4_content = dmc.TabsPanel(
         dmc.Card(
             [
-                dmc.NumberInput(id="epoch_delka", label="Délka epochy [s]", step=1, value=config.get('epoch_delka'), w=385, disabled=disabled),
-
                 
+
+                dmc.Divider(label="Epoch analyzér", labelPosition="center"),
+                dmc.SimpleGrid(cols=2,spacing="xs", verticalSpacing="lg", w=400, children=[
+                    dmc.Switch(
+                        id="epoch_switch",
+                        label="Analýza epoch",
+                        onLabel="ON",
+                        offLabel="OFF",
+                        checked=config.get('epoch_switch'), disabled=disabled
+                    ),
+                    dmc.NumberInput(id="epoch_delka", label="Délka epochy [s]", step=1, value=config.get('epoch_delka'), w=150, disabled=disabled),
+                ]),
+
+                dmc.Space(h=20),
+                dmc.Divider(label="Pík analyzér", labelPosition="center"),
+                
+                dmc.Switch(
+                    id="pik_switch",
+                    label="Analýza píků",
+                    onLabel="ON",
+                    offLabel="OFF",
+                    checked=config.get('pik_switch'), disabled=disabled
+                ),
+
+                html.Div([
+                    dmc.RangeSlider(
+                        id='pik_time-range-slider',
+                        max=1439,
+                        step=10,  # Step by 10 minutes
+                        value=[config.get('pik_rangeMin'), config.get('pik_rangeMax')], 
+                        # Show time every 2 hours (120 minutes)
+                        marks=[{"value":i, "label":Utils.minutes_to_time(None,i)} for i in range(0, 1440, 120)],
+                        w=800, disabled=disabled
+                    ),
+                    html.Div(id='pik_output-time-range', style={'marginTop': 20}),
+                ], id="pik_time_range_div", hidden=True),
                     
             ],withBorder=True,
         shadow="sm",

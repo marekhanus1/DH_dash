@@ -59,7 +59,7 @@ DashMain()
 # POHYB V TABULCE JE K HOVNU - done!!!!!
 # Zvětšit labely v grafu - done
 # Pík analyzér
-    # Přidat do nastavení pík analyzér - range slider a switch
+    # Přidat do nastavení pík analyzér - range slider a switch - done
     # Přidat do nastavení možnost zapnutí/vypnutí pík analyzéru a epoch analyzéru
     #   - Když jsou vypnuté, změnit zobrazení karet
 

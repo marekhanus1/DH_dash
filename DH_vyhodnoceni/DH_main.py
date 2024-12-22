@@ -10,8 +10,6 @@ from DH_vyhodnoceni.DH_analyseHR import AnalyseHR
 from DH_vyhodnoceni.DH_analysePeaks import AnalysePeaks
 import DH_vyhodnoceni.download_files as download_files
 
-
-
 class DecodeHolter(ReadAndDecode, AnalyseHR, AnalysePeaks):
     def __init__(self, shared_data):
         self.shared_data = shared_data
@@ -68,7 +66,9 @@ class DecodeHolter(ReadAndDecode, AnalyseHR, AnalysePeaks):
         self.shared_data["stage"] = 3 # Fáze tři - FLEX přečten
 
         print("ANALYZE EPOCHS...")
-        self.analyze_epochs() 
+        if self.args["epocha"] != None:
+            self.analyze_epochs() 
+
         self.shared_data["stage"] = 4 # Fáze čtyři - analýza epoch dokončena
 
         
@@ -97,15 +97,15 @@ class DecodeHolter(ReadAndDecode, AnalyseHR, AnalysePeaks):
             f.create_dataset("flexdiff", data=self.flex_diff, compression="gzip")
 
             # EPOCHY
-            print("ZAPSAL JSEM EPOCHY")
-            f.create_dataset("epochy_HR",     data=self.epoch_stats["HR"],     compression="gzip")
-            f.create_dataset("epochy_RESP",   data=self.epoch_stats["RESP"],   compression="gzip")
-            f.create_dataset("epochy_RR-min", data=self.epoch_stats["RR-min"], compression="gzip")
-            f.create_dataset("epochy_RR-max", data=self.epoch_stats["RR-max"], compression="gzip")
-            f.create_dataset("epochy_SDNN",   data=self.epoch_stats["SDNN"],   compression="gzip")
-            f.create_dataset("epochy_RMSSD",  data=self.epoch_stats["RMSSD"],  compression="gzip")
-            f.create_dataset("epochy_FlexDer",  data=self.epoch_stats["FlexDer"],  compression="gzip")
-            f.create_dataset("epochy_time",   data=self.epoch_stats["time"],   compression="gzip")
+            if self.args["epocha"] != None:
+                f.create_dataset("epochy_HR",     data=self.epoch_stats["HR"],     compression="gzip")
+                f.create_dataset("epochy_RESP",   data=self.epoch_stats["RESP"],   compression="gzip")
+                f.create_dataset("epochy_RR-min", data=self.epoch_stats["RR-min"], compression="gzip")
+                f.create_dataset("epochy_RR-max", data=self.epoch_stats["RR-max"], compression="gzip")
+                f.create_dataset("epochy_SDNN",   data=self.epoch_stats["SDNN"],   compression="gzip")
+                f.create_dataset("epochy_RMSSD",  data=self.epoch_stats["RMSSD"],  compression="gzip")
+                f.create_dataset("epochy_FlexDer",  data=self.epoch_stats["FlexDer"],  compression="gzip")
+                f.create_dataset("epochy_time",   data=self.epoch_stats["time"],   compression="gzip")
 
 
             # HR ANALÝZA
@@ -116,13 +116,4 @@ class DecodeHolter(ReadAndDecode, AnalyseHR, AnalysePeaks):
             
         print("Done.")
         self.shared_data["stage"] = 999 # konec programu
-
-        """
-        for i in plt.get_fignums():
-            fig = plt.figure(i)
-            fig.canvas.manager.full_screen_toggle()
-        
-        plt.show()
-        """
-
 

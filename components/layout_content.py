@@ -2,7 +2,7 @@ from dash import html, dcc
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 from components.tabs_content import show_tabs
-from components.vysledky_chart_content import appshell
+from components.vysledky_chart_content import show_vysledky
 from components.epochy_content import show_epochy
 
 style = {
@@ -12,7 +12,7 @@ style = {
     "zoom": 1.5,
 }
 
-def create_card(title,disc, link="#", loading=True, src=None):
+def create_card(title,disc, link="#", loading=True, src=None, available=""):
     return dmc.Card(
         children=[
             dcc.Link(
@@ -26,13 +26,18 @@ def create_card(title,disc, link="#", loading=True, src=None):
                         zIndex=10,
                     ),
                     dmc.BackgroundImage(
-                        dmc.Box(h=200, w=100),
                         src=src,
+                        children=[
+                            dmc.Box(
+                                h=200, 
+                                w=400, 
+                                style={"display": "flex", "justifyContent": "center", "alignItems": "center"},
+                                children=[DashIconify(icon=available, width=200, height=200, color="red")]
+                            ),
+                        ],
                     ),
-                    
                 ],
                 href=link,
-
                 style={"textDecoration": "none", "color": "inherit"}  # Removes blue text underline
             ),
         ],
@@ -106,7 +111,8 @@ class layout_content():
                                 dmc.SimpleGrid(cols=2,spacing="lg", verticalSpacing="lg", children=[
                                      
                                     create_card("VÝSLEDKY", "Zobrazit vyhodnocené data v grafu", src="assets/vysledky_img.png"),
-                                    create_card("EPOCHY",   "Zobrazit jednotlivé epochy měření", src="assets/epochy_img.png"),
+                                    create_card("EPOCHY",   "Analýza epoch měření", src="assets/epochy_img.png"),
+                                    create_card("PÍKY",   "Analýza píků měření", src="assets/epochy_img.png"),
                                 ],
                             )
                             ])
@@ -116,7 +122,22 @@ class layout_content():
             ], style=style)
     
 
-    def decoding_done():
+    def decoding_done(args):
+        if args["epocha"] != None:
+            epochy_icon = ""
+            epochy_link = "/epochy"
+        else:
+            epochy_icon = "gg:unavailable"
+            epochy_link = "/"
+
+        if args["pik_range"] != None:
+            pik_icon = ""
+            pik_link = "/piky"
+        else:
+            pik_icon = "gg:unavailable"
+            pik_link = "/"
+
+
         return html.Div([
                     dcc.Location(id='url', refresh=False),  
                     html.H1("Holter dekodér", style={"text-align": "center"} ,id="title"),
@@ -173,7 +194,8 @@ class layout_content():
                             dmc.Container([
                                 dmc.SimpleGrid(cols=2,spacing="lg", verticalSpacing="lg", children=[
                                     create_card("VÝSLEDKY", "Zobrazit vyhodnocené data v grafu", link="/vysledky", loading=False, src="assets/vysledky_img.png"),
-                                    create_card("EPOCHY",   "Zobrazit jednotlivé epochy měření", link="/epochy",   loading=False, src="assets/epochy_img.png"),
+                                    create_card("EPOCHY",   "Analýza epoch měření", link=epochy_link,   loading=False, src="assets/epochy_img.png", available=epochy_icon),
+                                    create_card("PÍKY",   "Analýza píků měření", link=pik_link,   loading=False, src="assets/epochy_img.png", available=pik_icon),
                                 ])
                             ])
                                 
@@ -181,8 +203,8 @@ class layout_content():
                     ])
                 ], style=style)
     
-    def chart_vysledky():
-        return appshell
+    def chart_vysledky(args):
+        return show_vysledky(args)
     
     def epochy():
         return show_epochy()
