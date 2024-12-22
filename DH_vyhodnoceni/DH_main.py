@@ -77,7 +77,7 @@ class DecodeHolter(ReadAndDecode, AnalyseHR, AnalysePeaks):
         self.shared_data["stage"] = 5 # Fáze pět - analýza HR dokončena
 
         print("ANALYZE PEAKS...")
-        self.peak_analysis()
+        #self.peak_analysis()
         self.shared_data["stage"] = 6 # Fáze šest - analýza píků dokončena
         
         # Ulož data do paměti pro web

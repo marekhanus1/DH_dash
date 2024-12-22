@@ -232,6 +232,15 @@ class EpochyCallbacks(Utils):
                             document.getElementById('epochy_reset_button').click()
                         }
                         
+
+                        if(event.key == 'ArrowDown'){
+                            document.getElementById('epochy_arrowdown_button').click()
+                        }
+
+                        if(event.key == 'ArrowUp'){
+                            document.getElementById('epochy_arrowup_button').click()
+                        }
+
                         /*
                         if (event.key == 'ArrowDown') {
                             // Logic to select the row below by row-index value
@@ -296,8 +305,33 @@ class EpochyCallbacks(Utils):
             else:
                 return no_update
             
-        # Callback to handle button clicks and update the category, then select the row below it, so it's easier for user.
+        # Callback for automatic select of row in table
+    
+        @self.app.callback(
+            [Output("epochy_gridtable", "selectedRows", allow_duplicate=True),Output("epochy_gridtable", "scrollTo", allow_duplicate=True)],
+            Input("epochy_arrowdown_button", "n_clicks"),
+            Input("epochy_arrowup_button", "n_clicks"),
+            State("epochy_gridtable", "selectedRows"),
+            State("epochy_gridtable", "rowData"),
+            prevent_initial_call=True
+        )
         
+        def arrow_movement(up,down,selected_rows,row_data):
+            print(ctx.triggered_id)
+
+            selected_index = selected_rows[0]["Číslo epochy"] - 1
+
+            if ctx.triggered_id == "epochy_arrowdown_button":
+                print("DOWN")
+                new_selected_row = row_data[selected_index + 1] if selected_index < len(row_data) - 1 else row_data[selected_index]
+                
+            elif ctx.triggered_id == "epochy_arrowup_button":
+                print("UP")
+                new_selected_row = row_data[selected_index - 1] if selected_index > 0 else row_data[selected_index]
+
+            return [new_selected_row], {"data": new_selected_row}
+
+        # Callback to handle button clicks and update the category, then select the row below it, so it's easier for user.
         @self.app.callback(
             [Output('epochy_gridtable', 'rowData', allow_duplicate=True), Output("epochy_gridtable", "selectedRows"), Output("epochy_save", "children", allow_duplicate=True), Output("epochy_gridtable", "scrollTo")],
             Input('epochy_category_a', 'n_clicks'),

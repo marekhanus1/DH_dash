@@ -50,12 +50,16 @@ class DashMain(DashCallbacks):
 
 
         if __name__ == '__main__':
-            self.app.run_server(debug=True, port=5001) #,dev_tools_ui=False,dev_tools_props_check=False
+            self.app.run_server(debug=True, port=5000) #,dev_tools_ui=False,dev_tools_props_check=False
 
 DashMain()
 
 
 # TODO
-# POHYB V TABULCE JE K HOVNU - done?
+# POHYB V TABULCE JE K HOVNU - done!!!!!
 # Zvětšit labely v grafu - done
-# Pík analyzér 
+# Pík analyzér
+    # Přidat do nastavení pík analyzér - range slider a switch
+    # Přidat do nastavení možnost zapnutí/vypnutí pík analyzéru a epoch analyzéru
+    #   - Když jsou vypnuté, změnit zobrazení karet
+
