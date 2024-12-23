@@ -82,7 +82,7 @@ class ReadAndDecode:
 
         # nastavení rozmezí vyhodnocení podle časové značky
         if(self.args["range"] != None):
-            start_file_ekg, end_file_ekg = self.get_time_range(self.ekg_casova_znacka)
+            start_file_ekg, end_file_ekg = self.get_time_range(self.ekg_casova_znacka, self.args["range"])
             if self.file_skip == True:
                 return
             
@@ -149,7 +149,7 @@ class ReadAndDecode:
         print("Datový soubor přečten")
 
         if(self.args["range"] != None):
-            start_file_flex, end_file_flex = self.get_time_range(self.flex_casova_znacka)
+            start_file_flex, end_file_flex = self.get_time_range(self.flex_casova_znacka, self.args["range"])
             dta = dta[start_file_flex:end_file_flex]
             self.flex_casova_znacka = self.flex_casova_znacka[start_file_flex:end_file_flex]
 
@@ -177,8 +177,8 @@ class ReadAndDecode:
 
 
 
-    def get_time_range(self, data): # NAJDI ČASOVÝ ÚSEK PRO VYHODNOCENÍ
-        start_time_str, end_time_str = self.args["range"].split('-')
+    def get_time_range(self, data, range): # NAJDI ČASOVÝ ÚSEK PRO VYHODNOCENÍ
+        start_time_str, end_time_str = range.split('-')
         start_time = time.fromisoformat(start_time_str)
         end_time = time.fromisoformat(end_time_str)
 

@@ -1,5 +1,5 @@
 
-from dash import Output, Input, State, no_update, callback_context, ctx
+from dash import Output, Input, State, no_update, callback_context, ctx, ALL
 
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
@@ -11,18 +11,27 @@ class VysledkyCallbacks(Utils):
         ##################################### VYSLEDKY ##################################### 
         ##################################### VYSLEDKY ##################################### 
         ##################################### VYSLEDKY ##################################### 
+        
+
         @self.app.callback(
             [Output("graph-id", "figure"), Output("status-message", "children")],
             Input("plot-button", "n_clicks"),
 
-            [State(f"chbox_{i.lower()}", 'checked') for j in self.data_names for i in j]+
-            [State(f"select_{i.lower()}", 'value') for j in self.data_names for i in j],
+            #[State(f"chbox_{i.lower()}", 'checked') for j in self.data_names, "data") for i in j]+ # PROBLÉM s data_names
+            #[State(f"select_{i.lower()}", 'value') for j in self.data_names for i in j],
+
+            State({"type": "checkbox", "index": ALL}, "checked"),
+            State({"type": "select", "index": ALL}, "value"),
+
+
 
             prevent_initial_call=True,
         )
         def plot_graph(*inputs):
             print(inputs)
+            print(self.data_names)
             ctx = callback_context
+            
             if len(ctx.triggered) and "plot-button" in ctx.triggered[0]["prop_id"]:
                 # Note how the replace method is used here on the global figure object
                 
@@ -33,7 +42,7 @@ class VysledkyCallbacks(Utils):
                 total_elements = sum(len(sublist) for sublist in self.data_names)
                 print(total_elements)
                 for i in range(total_elements):
-                    if inputs[i+1] == True:     
+                    if inputs[1][i] == True:     
 
                         current_index = 0           
                         for row_index in range(self.data_names.shape[0]):
@@ -43,7 +52,7 @@ class VysledkyCallbacks(Utils):
                                 break
                             current_index += row_length
 
-                        self.fig.add_trace(go.Scattergl(name=self.data_names[row_index][col_index]), hf_x=self.time[self.time_names[row_index]], hf_y=self.data[self.data_names[row_index][col_index]], secondary_y = int(inputs[i+(total_elements+1)]))
+                        self.fig.add_trace(go.Scattergl(name=self.data_names[row_index][col_index]), hf_x=self.time[self.time_names[row_index]], hf_y=self.data[self.data_names[row_index][col_index]], secondary_y = int(inputs[2][i]))
 
 
                 self.fig.update_layout(

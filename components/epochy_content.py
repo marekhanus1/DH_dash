@@ -124,5 +124,6 @@ def show_epochy():
             ],
             header={"height": "10vh"},
             footer={"height": "40vh"},
-            padding="xs"
+            padding="xs",
+            style={"overflow": "hidden"}
         )

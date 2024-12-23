@@ -1,4 +1,4 @@
-from dash import Output, Input, State, no_update
+from dash import Output, Input, State, no_update, callback_context
 from components.layout_content import layout_content
 import multiprocessing
 
@@ -56,7 +56,7 @@ class FormCallbacks(Utils):
 
         @self.app.callback(
             Output('main-div', 'children', allow_duplicate=True),
-            Input('submit-button', 'n_clicks'),
+            Input('submit-button', 'n_clicks'),Input('posledni_vyhodnoceni_button', 'n_clicks'),
             
             [State(switch_id, 'checked') for switch_id in ['range_switch', 'vrub_switch', 'butter_switch', 'butterflex_switch']]+ # Switche určující platnost argumentů
             [State('datum_input', 'value'), State('chbox_SSH', 'checked'), State('time-range-slider', 'value')]+ # Soubory
@@ -68,59 +68,70 @@ class FormCallbacks(Utils):
             prevent_initial_call=True
         )
         def update_output(*inputs):
-            if inputs[0] > 0:
+            if inputs[0] > 0 or inputs[1] > 0:
+                print(callback_context.triggered[0]["prop_id"])
+                print(inputs)
+
+                print(len(inputs))
                                       #    0        1        2          3         4         5       6       
                 inputs = list(inputs) # n_clicks rangeSW, butterSW, vrubSW, flexbutterSW, date,    ssh, 
                                       #     7        8        9          10         11          12
                                       # range_val, limit, butter_val, vrub_val, frex_prom, flexbutter_val
                                       #   13        14        15         16             17         
                                       # export,  epoch_delka pik_range, epoch_switch, pik_switch
-                date_index = 5
-                range_index = 7
-                pik_range_index = 15
-
-                if len(inputs[date_index]) > 6:
-                    inputs[date_index] = inputs[date_index][2:].replace("-", "") # Nastav formát datumu
-
-                config_names = ["rangeSW", "vrub_SW", "butter_SW", "flexbutter_sw",
-                                "date", "ssh", "rangeMax", "rangeMin", 
-                                "pik_limit", "butter_val", "vrub_val", "flex_prom", "flexbutter_val",
-                                "exportEKG", "epoch_delka",  "pik_rangeMax", "pik_rangeMin", "epoch_switch" , "pik_switch"]
+                # definice indexů
+                date_index = 6
+                range_index = 8
+                pik_range_index = 16
                 
-                config = Utils.read_config()
+                butter_index = 10
+                vrub_index = 11
+                butterflex_index = 13
                 
-                
-                index_push = 0
-                for i in range(len(config_names)-2):
-                    if i == range_index-1 or i == pik_range_index-1: # TIME RANGE
-                        if inputs[i+index_push] != None:
-                            print(config_names[i+index_push])
-                            config[config_names[i+index_push]] = inputs[i+1][1]
-                            config[config_names[i+index_push+1]] = inputs[i+1][0]
-                        
-                        index_push += 1
+                if callback_context.triggered[0]["prop_id"] == "submit-button.n_clicks":
+                    if len(inputs[date_index]) > 6:
+                        inputs[date_index] = inputs[date_index][2:].replace("-", "") # Nastav formát datumu
 
-                    else:
-                        if(inputs[i+1] != None):
-                            config[config_names[i+index_push]] = inputs[i+1]
+                    config_names = ["rangeSW", "vrub_SW", "butter_SW", "flexbutter_sw",
+                                    "date", "ssh", "rangeMax", "rangeMin", 
+                                    "pik_limit", "butter_val", "vrub_val", "flex_prom", "flexbutter_val",
+                                    "exportEKG", "epoch_delka",  "pik_rangeMax", "pik_rangeMin", "epoch_switch" , "pik_switch"]
+                    
+                    config = Utils.read_config()
+                    
+                    
+                    index_push = 0
+                    for i in range(len(config_names)-2):
+                        if i == range_index-2 or i == pik_range_index-2: # TIME RANGE
+                            if inputs[i+index_push] != None:
+                                print(config_names[i+index_push])
+                                print(inputs[i+2])
+                                config[config_names[i+index_push]] = inputs[i+2][1]
+                                config[config_names[i+index_push+1]] = inputs[i+2][0]
+                            
+                            index_push += 1
+
+                        else:
+                            if(inputs[i+2] != None):
+                                config[config_names[i+index_push]] = inputs[i+2]
 
 
 
-                self.write_config(config)
+                    self.write_config(config)
 
 
                 # Hodnoty time_range, arg_butterworth, arg_vrub, arg_butterflex a epochy jsou neplatné jestli jejich switch není kladný
-                indexy_neplatnych_hodnot = [range_index, 9, 10, 12]
+                indexy_neplatnych_hodnot = [range_index, butter_index, vrub_index, butterflex_index]
 
                 for i, index in enumerate(indexy_neplatnych_hodnot):
-                    if inputs[i+1] != True:
+                    if inputs[i+2] != True:
                         inputs[index] = None
 
-                if inputs[16] != True:
-                    inputs[14] = None
+                if inputs[pik_range_index+1] != True:
+                    inputs[pik_range_index-1] = None
                 
-                if inputs[17] != True:
-                    inputs[15] = None
+                if inputs[pik_range_index+2] != True:
+                    inputs[pik_range_index] = None
                 
                 for i in [range_index, pik_range_index]:
                     if inputs[i] != None:
@@ -139,13 +150,17 @@ class FormCallbacks(Utils):
                 self.create_args(arg_names) # Nastav hodnoty všech argumentů na None
 
                 for i, name in enumerate(arg_names):
-                    self.args[name] = inputs[i+5]
+                    self.args[name] = inputs[i+6]
 
                 print(self.args)
-                self.process = multiprocessing.Process(target=self.decode_holter.main, args=(self.args,)) # Spusť vyhodnocovací program přes Multiprocessing
-                self.process.start()
-                self.disable_components = True
+                if callback_context.triggered[0]["prop_id"] == "submit-button.n_clicks":
+                    self.process = multiprocessing.Process(target=self.decode_holter.main, args=(self.args,)) # Spusť vyhodnocovací program přes Multiprocessing
+                    self.process.start()
+                    self.disable_components = True
 
-                return layout_content.after_start()
+                    return layout_content.after_start()
+                else:
+                    self.shared_data["stage"] = 999
+                    return layout_content.after_start()
             
             return no_update

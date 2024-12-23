@@ -55,8 +55,12 @@ class layout_content():
                             html.Div([
                                 html.H3("Nastavení"),
                                 show_tabs(disabled=False),
-                                dmc.Button("Potvrdit", id="submit-button", n_clicks=0, color="green"),
-                                html.Div(id='output-div'),
+                                dmc.Group([
+                                    dmc.Button("Potvrdit", id="submit-button", n_clicks=0, color="green"),
+                                    dmc.Space(w="xs"),
+                                    dmc.Button("Zobrazit poslední vyhodnocení", id="posledni_vyhodnoceni_button", n_clicks=0, color="blue"),
+                                    html.Div(id='output-div'),
+                                ])
                             ])
                         ])
                 ], style=style)

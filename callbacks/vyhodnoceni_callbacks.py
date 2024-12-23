@@ -1,4 +1,4 @@
-from dash import Output, Input, State, no_update, callback_context, ctx
+from dash import Output, Input, State, no_update
 from components.utils import Utils
 from components.layout_content import layout_content
 
@@ -10,16 +10,20 @@ class VyhodnoceniCallbacks(Utils):
     def vyhodnoceni_callbacks(self):
 
         self.folder_names = ["EKG", "FLEX", "HR A RESP", "EPOCHY"]
+        self.HR_names = np.array(["epochy_HR", "epochy_RESP", "epochy_RR-min", "epochy_RR-max", "epochy_SDNN", "epochy_RMSSD", "epochy_FlexDer"], dtype=object)
+        self.Piky_names = np.array(["peaks_P", "peaks_PR", "peaks_Q", "peaks_QTc"], dtype=object)
+
         self.data_names = np.array([["ekg", "ekgraw"],
                                     ["flex", "flexraw"],                             
                                     ["HR", "RESP"]], dtype=object)
-
-        self.HR_names = np.array(["epochy_HR", "epochy_RESP", "epochy_RR-min", "epochy_RR-max", "epochy_SDNN", "epochy_RMSSD", "epochy_FlexDer"], dtype=object)
         self.time_names = ["ekgtime", "flextime", "HR_RESP_time"]
 
         ##################################### VYHODNOCENI ##################################### 
         ##################################### VYHODNOCENI ##################################### 
         ##################################### VYHODNOCENI ##################################### 
+        
+
+
         @self.app.callback(
             #[Output('output-div', 'children'), ],
             
@@ -30,11 +34,14 @@ class VyhodnoceniCallbacks(Utils):
         def reset_vyhodnoceni(n_clicks):
             if n_clicks > 0:
                 # Vynuluj proces
-                print(self.process.is_alive())
-                if self.process.is_alive():
-                    self.process.terminate()
-                    self.process.join()
-                
+                try:
+                    print(self.process.is_alive())
+                    if self.process.is_alive():
+                        self.process.terminate()
+                        self.process.join()
+                except:
+                    print("Process does not exist")
+
                 self.disable_components = False
 
                 return layout_content.before_start()
@@ -86,13 +93,34 @@ class VyhodnoceniCallbacks(Utils):
                     
                     
                     
-                    self.data, self.time = self.read_hdf5_data(self.data_names, self.time_names)
+
+                    if self.args["epocha"] != None:
+                        self.data_names = np.array([["ekg", "ekgraw"],
+                                ["flex", "flexraw"], 
+                                ["epochy_HR", "epochy_RESP", "epochy_RR-min", "epochy_RR-max", "epochy_SDNN", "epochy_RMSSD", "epochy_FlexDer"],                            
+                                ["HR", "RESP"]], dtype=object)
+                                                        #np.array(self.data_names.tolist() + [self.HR_names.tolist()], dtype=object)
+                        self.time_names = ["ekgtime", "flextime", "epochy_time", "HR_RESP_time"]
+                    
+
+                    data_names = self.data_names
+                    time_names = self.time_names
+
+                    if self.args["pik_range"] != None:
+                        data_names = np.array(data_names.tolist() + [self.Piky_names.tolist()], dtype=object)
+                        time_names = np.array(time_names + ["peaks_time"], dtype=object)
+
+                    
+
+                    print(data_names, time_names)
+                    self.data, self.time = self.read_hdf5_data(data_names, time_names)
                     if self.args["epocha"] != None:
                         self.epochy_data = pd.DataFrame({k: self.data[k] for k in self.data_names[2]})
                         cas_epochy = [i.strftime("%H:%M:%S") for i in self.time["epochy_time"]]
                         self.epochy_data.insert(0, "Čas epochy", cas_epochy)
                         self.epochy_data.insert(0, "Číslo epochy", range(1, len(self.epochy_data) + 1))
                     
+
                     return layout_content.decoding_done(self.args)
                     
                 else:

@@ -15,11 +15,13 @@ def show_vysledky(args):
                                 ["HR", "RESP"]], dtype=object)
 
     HR_names = np.array(["epochy_HR", "epochy_RESP", "epochy_RR-min", "epochy_RR-max", "epochy_SDNN", "epochy_RMSSD", "epochy_FlexDer"], dtype=object)
-    time_names = ["ekgtime", "flextime", "HR_RESP_time"]
 
     if args["epocha"] != None:
-        data_names += HR_names
-        time_names += ["epochy_time"]
+        data_names = np.array([["ekg", "ekgraw"],
+                                ["flex", "flexraw"], 
+                                ["epochy_HR", "epochy_RESP", "epochy_RR-min", "epochy_RR-max", "epochy_SDNN", "epochy_RMSSD", "epochy_FlexDer"],                            
+                                ["HR", "RESP"]], dtype=object) #np.array(data_names.tolist() + [HR_names.tolist()], dtype=object)
+        
         
 
     maindiv = html.Div([
@@ -34,9 +36,9 @@ def show_vysledky(args):
             for i in j:
                 form += [
                             dmc.Checkbox(label=i.upper().replace("EPOCHY_", "").replace("-", ""),
-                                    id=f"chbox_{i.lower()}", w=100, size="xl"), dmc.Space(w=1), 
+                                    id={"type": "checkbox", "index": i.lower()}, w=100, size="xl"), dmc.Space(w=1), #f"chbox_{i.lower()}"
                         
-                            dmc.Select(value="0", id=f"select_{i.lower()}", 
+                            dmc.Select(value="0", id={"type": "select", "index": i.lower()}, # id=f"select_{i.lower()}"
                                     data=[{"value": "0", "label":"y1"}, {"value": "1", "label": "y2"}], w=70)
                         ]
             
@@ -65,6 +67,7 @@ def show_vysledky(args):
 
     header = html.Div([
         dcc.Location(id='url', refresh=False),
+        
         dmc.Group([
             # Left icon (home)
             dcc.Link(
@@ -86,6 +89,7 @@ def show_vysledky(args):
 
     return dmc.AppShell(
                 [
+                    
                     dmc.AppShellHeader(children=[header], px=10),
                     dmc.AppShellNavbar(children=[side_div]),
                     dmc.AppShellMain(children=[maindiv]),
@@ -96,6 +100,6 @@ def show_vysledky(args):
                     "width": 300,
                     "breakpoint": "sm",
                     "collapsed": {"mobile": True},
-                },
+                }
                 
             )

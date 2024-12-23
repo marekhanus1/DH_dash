@@ -31,13 +31,13 @@ class DashCallbacks(FormCallbacks, VyhodnoceniCallbacks, VysledkyCallbacks, Epoc
                         return layout_content.chart_vysledky(self.args)
                     
                     elif pathname == '/epochy':
-                        if self.args["epocha"] == True:
+                        if self.args["epocha"] != None:
                             return layout_content.epochy()
                         else:
                             return layout_content.decoding_done(self.args)
                     
                     elif pathname == '/piky':
-                        if self.args["piky"] == True:
+                        if self.args["pik_range"] != None:
                             return layout_content.epochy()
                         else:
                             return layout_content.decoding_done(self.args)

@@ -77,7 +77,9 @@ class DecodeHolter(ReadAndDecode, AnalyseHR, AnalysePeaks):
         self.shared_data["stage"] = 5 # Fáze pět - analýza HR dokončena
 
         print("ANALYZE PEAKS...")
-        #self.peak_analysis()
+        if self.args["pik_range"] != None:
+            self.peak_analysis()
+
         self.shared_data["stage"] = 6 # Fáze šest - analýza píků dokončena
         
         # Ulož data do paměti pro web
@@ -112,6 +114,14 @@ class DecodeHolter(ReadAndDecode, AnalyseHR, AnalysePeaks):
             f.create_dataset("HR", data=self.avg_HR_RESP["HR"], compression="gzip")
             f.create_dataset("RESP", data=self.avg_HR_RESP["RESP"], compression="gzip")
             f.create_dataset("HR_RESP_time", data=self.avg_HR_RESP["time"], compression="gzip")
+
+            if self.args["pik_range"] != None:
+                f.create_dataset("peaks_time", data=self.peaks_stats["time"], compression="gzip")
+                f.create_dataset("peaks_P", data=self.peaks_stats["P"], compression="gzip")
+                f.create_dataset("peaks_PR", data=self.peaks_stats["PR"], compression="gzip")
+                f.create_dataset("peaks_Q", data=self.peaks_stats["Q"], compression="gzip")
+                f.create_dataset("peaks_QTc", data=self.peaks_stats["QTc"], compression="gzip")
+
 
             
         print("Done.")
