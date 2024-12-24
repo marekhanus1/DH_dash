@@ -4,6 +4,7 @@ from dash_iconify import DashIconify
 from components.tabs_content import show_tabs
 from components.vysledky_chart_content import show_vysledky
 from components.epochy_content import show_epochy
+from components.piky_content import show_piky
 
 style = {
     "height": 800,
@@ -212,3 +213,6 @@ class layout_content():
     
     def epochy():
         return show_epochy()
+    
+    def piky():
+        return show_piky()

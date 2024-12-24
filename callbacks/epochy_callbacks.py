@@ -333,7 +333,7 @@ class EpochyCallbacks(Utils):
 
         # Callback to handle button clicks and update the category, then select the row below it, so it's easier for user.
         @self.app.callback(
-            [Output('epochy_gridtable', 'rowData', allow_duplicate=True), Output("epochy_gridtable", "selectedRows"), Output("epochy_save", "children", allow_duplicate=True), Output("epochy_gridtable", "scrollTo")],
+            [Output('epochy_gridtable', 'rowData', allow_duplicate=True), Output("epochy_gridtable", "selectedRows", allow_duplicate=True), Output("epochy_save", "children", allow_duplicate=True), Output("epochy_gridtable", "scrollTo", allow_duplicate=True)],
             Input('epochy_category_a', 'n_clicks'),
             Input('epochy_category_s', 'n_clicks'),
             Input('epochy_category_n', 'n_clicks'),
@@ -345,7 +345,7 @@ class EpochyCallbacks(Utils):
         def set_category(n_clicks_a, n_clicks_s, n_clicks_n, selected_rows, row_data, scroll_to):
             
             if not selected_rows:
-                return no_update, no_update, no_update  # No row selected, return current data unchanged
+                return no_update, no_update, no_update, no_update  # No row selected, return current data unchanged
 
             print(ctx.triggered_id, selected_rows[0]['Číslo epochy'])
 

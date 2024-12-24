@@ -159,7 +159,7 @@ class Utils():
             config = Utils.read_config()
 
             datum_content = dmc.Select(
-                        id="datum_input",
+                        id={"type": "nastaveni_input", "index":"datum_input"},
                         data=Utils.get_dates_from_filenames(),
                         value=config.get("date"),
                         leftSection=DashIconify(icon="clarity:date-line"),
@@ -172,7 +172,7 @@ class Utils():
             return datum_content
         elif value == "jine":
             datum_content = dmc.DatePickerInput(
-                        id="datum_input",
+                        id={"type": "nastaveni_input", "index":"datum_input"},
                         value=datetime.today(), leftSection=DashIconify(icon="clarity:date-line"), w=300,
                         valueFormat="DD. M. YYYY",
                         disabled=disabled

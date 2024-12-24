@@ -1,13 +1,9 @@
 import numpy as np
 
 # Initial data
-data_names = np.array([["ekg", "ekgraw"],
-                                ["flex", "flexraw"], 
-                                ["epochy_HR", "epochy_RESP", "epochy_RR-min", "epochy_RR-max", "epochy_SDNN", "epochy_RMSSD", "epochy_FlexDer"],                            
-                                ["HR", "RESP"]], dtype=object)
+a = ([False, False, True, True, True, True], ['241129', 3000, 10], [False, False], [[480, 1020], 2, 4, 4, 30, [1410, 1420]])
 
-print(data_names)
-
-# Remove ["epochy_HR", "epochy_RESP", "epochy_RR-min", "epochy_RR-max", "epochy_SDNN", "epochy_RMSSD", "epochy_FlexDer"] by numpy slicing
-data_names = np.delete(data_names, 2, axis=0)
-print(data_names)
+for element in a:
+    for j in element:
+        print(j)
+        print(type(j))

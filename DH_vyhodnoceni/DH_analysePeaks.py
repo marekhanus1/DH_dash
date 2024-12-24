@@ -29,8 +29,6 @@ class AnalysePeaks:
         
         # convert all data in dict to datetime
         for key in ecg_peak_values:
-            for i in ecg_peak_values[key]:
-                print(i)
             ecg_peak_values[key] = [ekg_pik_casova_znacka[i] for i in ecg_peak_values[key] if str(i) != "nan"]
         
         
@@ -43,40 +41,54 @@ class AnalysePeaks:
 
         #print(len(ecg_peak_values['ECG_P_Offsets']))
         
-
+        print("RR_avg: ", RR_avg)
 
         P_distance = []
         PR_distance = []
         Q_distance = []
         QTc_distance = []
         flex_der = []
-        for i in range(len(peaks)-1):
+        for i in range(len(peaks)-2):
+            try:
+                if ecg_peak_values['ECG_P_Onsets'][i] != "nan" or ecg_peak_values['ECG_P_Offsets'][i] != "nan":
+                    P = (ecg_peak_values['ECG_P_Offsets'][i] - ecg_peak_values['ECG_P_Onsets'][i])*1000
+                    P_distance.append(round(P, 2))
 
-            if ecg_peak_values['ECG_P_Onsets'][i] != "nan" or ecg_peak_values['ECG_P_Offsets'][i] != "nan":
-                P_distance = np.append(P_distance, ecg_peak_values['ECG_P_Offsets'][i] - ecg_peak_values['ECG_P_Onsets'][i])
-            else:
-                P_distance = np.append(P_distance, "NaN")
+                else:
+                    P_distance.append(None)
+            except:
+                P_distance.append(None)
 
-            if ecg_peak_values['ECG_R_Onsets'][i] != "nan" or ecg_peak_values['ECG_P_Onsets'][i] != "nan":
-                PR_distance = np.append(PR_distance, ecg_peak_values['ECG_R_Onsets'][i] - ecg_peak_values['ECG_P_Onsets'][i])
-            else:
-                PR_distance = np.append(PR_distance, "NaN")
+            try:
+                if ecg_peak_values['ECG_R_Onsets'][i] != "nan" or ecg_peak_values['ECG_P_Onsets'][i] != "nan":
+                    PR = (ecg_peak_values['ECG_R_Onsets'][i] - ecg_peak_values['ECG_P_Onsets'][i]) * 1000
+                    PR_distance.append(round(PR, 2))
+                else:
+                    PR_distance.append(None)
+            except:
+                PR_distance.append(None)
             
-            if ecg_peak_values['ECG_R_Onsets'][i] != "nan" or ecg_peak_values['ECG_Q_Peaks'][i] != "nan":
-                Q_distance = np.append(Q_distance, ecg_peak_values['ECG_Q_Peaks'][i] - ecg_peak_values['ECG_R_Onsets'][i])
-            else:
-                Q_distance = np.append(Q_distance, "NaN")
+            try:
+                if ecg_peak_values['ECG_R_Onsets'][i] != "nan" or ecg_peak_values['ECG_Q_Peaks'][i] != "nan":
+                    Q = (ecg_peak_values['ECG_Q_Peaks'][i] - ecg_peak_values['ECG_R_Onsets'][i]) * 1000
+                    Q_distance.append(round(Q, 2))
+                else:
+                    Q_distance.append(None)
+            except:
+                Q_distance.append(None)
 
-            if ecg_peak_values['ECG_T_Offsets'][i] != "nan" or ecg_peak_values['ECG_R_Onsets'][i] != "nan":            
-                QTc = round((ecg_peak_values['ECG_T_Offsets'][i] - ecg_peak_values['ECG_R_Onsets'][i])/np.sqrt(RR_avg/1000))
-                QTc_distance = np.append(QTc_distance, QTc)
-            else:
-                QTc_distance = np.append(QTc_distance, "NaN")
-
+            try:
+                if ecg_peak_values['ECG_T_Offsets'][i] != "nan" or ecg_peak_values['ECG_R_Onsets'][i] != "nan":            
+                    QTc = round(((ecg_peak_values['ECG_T_Offsets'][i] - ecg_peak_values['ECG_R_Onsets'][i])) * 1000 / np.sqrt(RR_avg * 1000))
+                    QTc_distance.append(QTc)
+                else:
+                    QTc_distance.append(None)
+            except:
+                QTc_distance.append(None)
 
 
         self.peaks_stats = {
-            "time":peaks_in_ms,
+            "time":peaks_in_ms[:-2],
             "P": P_distance,
             "PR": PR_distance,
             "Q": Q_distance,

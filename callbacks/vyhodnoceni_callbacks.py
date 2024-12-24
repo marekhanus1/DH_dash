@@ -93,7 +93,7 @@ class VyhodnoceniCallbacks(Utils):
                     
                     
                     
-
+                    print(self.data_names)
                     if self.args["epocha"] != None:
                         self.data_names = np.array([["ekg", "ekgraw"],
                                 ["flex", "flexraw"], 
@@ -102,9 +102,11 @@ class VyhodnoceniCallbacks(Utils):
                                                         #np.array(self.data_names.tolist() + [self.HR_names.tolist()], dtype=object)
                         self.time_names = ["ekgtime", "flextime", "epochy_time", "HR_RESP_time"]
                     
-
+                    print(self.data_names, self.time_names)
                     data_names = self.data_names
                     time_names = self.time_names
+
+                    print(data_names, time_names)
 
                     if self.args["pik_range"] != None:
                         data_names = np.array(data_names.tolist() + [self.Piky_names.tolist()], dtype=object)
@@ -115,11 +117,16 @@ class VyhodnoceniCallbacks(Utils):
                     print(data_names, time_names)
                     self.data, self.time = self.read_hdf5_data(data_names, time_names)
                     if self.args["epocha"] != None:
-                        self.epochy_data = pd.DataFrame({k: self.data[k] for k in self.data_names[2]})
+                        self.epochy_data = pd.DataFrame({k: self.data[k] for k in self.HR_names})
                         cas_epochy = [i.strftime("%H:%M:%S") for i in self.time["epochy_time"]]
                         self.epochy_data.insert(0, "Čas epochy", cas_epochy)
                         self.epochy_data.insert(0, "Číslo epochy", range(1, len(self.epochy_data) + 1))
                     
+                    if self.args["pik_range"] != None:
+                        self.piky_data = pd.DataFrame({k: self.data[k] for k in self.Piky_names})
+                        cas_piky = [i.strftime("%H:%M:%S")+ f".{i.microsecond // 100000}" for i in self.time["peaks_time"]]
+                        self.piky_data.insert(0, "Čas piku", cas_piky)
+                        self.piky_data.insert(0, "Číslo piku", range(1, len(self.piky_data) + 1))
 
                     return layout_content.decoding_done(self.args)
                     

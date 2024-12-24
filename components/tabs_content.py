@@ -35,7 +35,7 @@ def show_tabs(disabled=False):
                 html.Div(
                     children=[
                         dmc.Select(
-                            id="datum_input",
+                            id={"type": "nastaveni_input", "index": "datum_input"},
                             data=Utils.get_dates_from_filenames(),
                             value=config.get("date"),
                             leftSection=DashIconify(icon="clarity:date-line"),
@@ -50,7 +50,7 @@ def show_tabs(disabled=False):
                 dmc.Space(h="20"),
 
                 dmc.Checkbox(
-                    id="chbox_SSH", label="Stáhnout soubory přes SSH", checked=config.get('ssh'), mb=10, disabled=disabled
+                    id={"type": "nastaveni_checkbox", "index": "chbox_SSH"}, label="Stáhnout soubory přes SSH", checked=config.get('ssh'), mb=10, disabled=disabled
                 ),
 
                 dmc.Space(h="20"),
@@ -60,14 +60,14 @@ def show_tabs(disabled=False):
                 # Slider with range 0-1439, representing 0:00 - 23:59, step of 10 minutes
                 dmc.Switch(
                     label="Nastavit časové rozmezí vyhodnocení",
-                    id="range_switch",
+                    id={"type": "nastaveni_switch", "index": "range_switch"},
                     onLabel="ON",
                     offLabel="OFF",
                     checked=config.get('rangeSW'), disabled=disabled
                 ),
                 html.Div([
                 dmc.RangeSlider(
-                    id='time-range-slider',
+                    id={"type": "nastaveni_inputSW", "index": 'time-range-slider'},
                     max=1439,
                     step=10,  # Step by 10 minutes
                     value=[config.get('rangeMin'), config.get('rangeMax')], 
@@ -94,48 +94,48 @@ def show_tabs(disabled=False):
 
                 dmc.Divider(label="EKG", labelPosition="center"),
 
-                dmc.NumberInput(id="arg_limit", label="Limit vyhodnocení píků", step=10, value=config.get('pik_limit'), w=385, disabled=disabled),
+                dmc.NumberInput(id={"type": "nastaveni_input", "index":"arg_limit"}, label="Limit vyhodnocení píků", step=10, value=config.get('pik_limit'), w=385, disabled=disabled),
                 
                 dmc.Space(h=20),
 
                 
                 dmc.SimpleGrid(cols=2,spacing="xs", verticalSpacing="lg", w=600, children=[
                     dmc.Switch(
-                        id="butter_switch",
+                        id={"type": "nastaveni_switch", "index": "butter_switch"},
                         label="Butterworthův filtr",
                         onLabel="ON",
                         offLabel="OFF",
                         checked=config.get('butter_SW'), disabled=disabled
                     ),
-                    dmc.NumberInput(id="arg_butter", step=0.1, value=config.get('butter_val'), darkHidden=True, disabled=disabled),
+                    dmc.NumberInput(id={"type": "nastaveni_inputSW", "index": "arg_butter"}, step=0.1, value=config.get('butter_val'), darkHidden=True, disabled=disabled),
 
                     dmc.Switch(
-                        id="vrub_switch",
+                        id={"type": "nastaveni_switch", "index": "vrub_switch"},
                         label="Vrubový filtr",
                         onLabel="ON",
                         offLabel="OFF",
                         checked=config.get('vrub_SW'), disabled=disabled
                     ),
-                    dmc.NumberInput(id="arg_vrub", step=0.1, value=config.get('vrub_val'), darkHidden=True, disabled=disabled)
+                    dmc.NumberInput(id={"type": "nastaveni_inputSW", "index": "arg_vrub"}, step=0.1, value=config.get('vrub_val'), darkHidden=True, disabled=disabled)
                 ]),
                 dmc.Space(h=20),
 
                 ##################################################################################################################
                 dmc.Divider(label="FLEX", labelPosition="center"),
 
-                dmc.NumberInput(id="arg_flexprom", label="Prominence flex píků", step=1, value=config.get('flex_prom'), w=385, disabled=disabled),
+                dmc.NumberInput(id={"type": "nastaveni_input", "index":"arg_flexprom"}, label="Prominence flex píků", step=1, value=config.get('flex_prom'), w=385, disabled=disabled),
                 
                 dmc.Space(h=20),
 
                 dmc.SimpleGrid(cols=2,spacing="xs", verticalSpacing="lg", w=600, children=[
                     dmc.Switch(
-                        id="butterflex_switch",
+                        id={"type": "nastaveni_switch", "index": "butterflex_switch"},
                         label="Butterworthův filtr",
                         onLabel="ON",
                         offLabel="OFF",
                         checked=config.get('flexbutter_sw'), disabled=disabled
                     ),
-                    dmc.NumberInput(id="arg_butterflex", step=0.1, value=config.get('flexbutter_val'), darkHidden=True, disabled=disabled)
+                    dmc.NumberInput(id={"type": "nastaveni_inputSW", "index": "arg_butterflex"}, step=0.1, value=config.get('flexbutter_val'), darkHidden=True, disabled=disabled)
                 ]),
             ],withBorder=True,
         shadow="sm",
@@ -151,7 +151,7 @@ def show_tabs(disabled=False):
             [
                 dmc.Divider(label="EXPORT", labelPosition="center", size="md"),
                 dmc.Checkbox(
-                    id="chbox_export", label="Exportovat soubory pro EKG ANALYTIK", checked=config.get('exportEKG'), mb=10, disabled=disabled
+                    id={"type": "nastaveni_checkbox", "index": "chbox_export"}, label="Exportovat soubory pro EKG ANALYTIK", checked=config.get('exportEKG'), mb=10, disabled=disabled
                 ),
 
             ],
@@ -172,20 +172,20 @@ def show_tabs(disabled=False):
                 dmc.Divider(label="Epoch analyzér", labelPosition="center"),
                 dmc.SimpleGrid(cols=2,spacing="xs", verticalSpacing="lg", w=400, children=[
                     dmc.Switch(
-                        id="epoch_switch",
+                        id={"type": "nastaveni_switch", "index": "epoch_switch"},
                         label="Analýza epoch",
                         onLabel="ON",
                         offLabel="OFF",
                         checked=config.get('epoch_switch'), disabled=disabled
                     ),
-                    dmc.NumberInput(id="epoch_delka", label="Délka epochy [s]", step=1, value=config.get('epoch_delka'), w=150, disabled=disabled),
+                    dmc.NumberInput(id={"type": "nastaveni_inputSW", "index": "epoch_delka"}, label="Délka epochy [s]", step=1, value=config.get('epoch_delka'), w=150, disabled=disabled),
                 ]),
 
                 dmc.Space(h=20),
                 dmc.Divider(label="Pík analyzér", labelPosition="center"),
                 
                 dmc.Switch(
-                    id="pik_switch",
+                    id={"type": "nastaveni_switch", "index": "pik_switch"},
                     label="Analýza píků",
                     onLabel="ON",
                     offLabel="OFF",
@@ -194,7 +194,7 @@ def show_tabs(disabled=False):
 
                 html.Div([
                     dmc.RangeSlider(
-                        id='pik_time-range-slider',
+                        id={"type": "nastaveni_inputSW", "index": 'pik_time-range-slider'},
                         max=1439,
                         step=10,  # Step by 10 minutes
                         value=[config.get('pik_rangeMin'), config.get('pik_rangeMax')], 

@@ -1,5 +1,5 @@
 
-from dash import Output, Input, State, no_update, callback_context, ctx, ALL
+from dash import Output, Input, State, no_update, callback_context, ALL
 
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
