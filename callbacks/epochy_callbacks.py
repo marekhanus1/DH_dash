@@ -376,8 +376,12 @@ class EpochyCallbacks(Utils):
             prevent_initial_call=True
         )
         def scroll_to_row(scroll_to):
-            print(f"SCROLL TO: {scroll_to}")
-            return scroll_to | {'rowPosition': 'middle'}
+            if scroll_to != None:
+                print(f"SCROLL TO: {scroll_to}")
+                return scroll_to | {'rowPosition': 'middle'}
+            else:
+                print("NO SCROLL")
+                return no_update
 
         # Write category to all empty cells
         @self.app.callback(

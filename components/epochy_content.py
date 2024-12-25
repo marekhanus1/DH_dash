@@ -1,4 +1,3 @@
-from dash_resizable_panels import PanelGroup, Panel, PanelResizeHandle
 import dash_ag_grid as dag
 import dash_mantine_components as dmc
 from dash import dcc, html
