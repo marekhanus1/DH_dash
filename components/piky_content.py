@@ -35,11 +35,11 @@ def show_piky():
 
     piky_nastaveni_content = html.Div([
         dmc.Card([
-            dmc.NumberInput(label="Minimální hodnota RR", id="piky_RRmin", value=config.get("RR_min")),
-            dmc.NumberInput(label="Maximální hodnota RR", id="piky_RRmax", value=config.get("RR_max")),
-            dmc.NumberInput(label="Maximální hodnota SDNN", id="piky_SDNN", value=config.get("SDNN")),
-            dmc.NumberInput(label="Maximální hodnota RMSSD", id="piky_RMSSD", value=config.get("RMSSD")),
-            dmc.NumberInput(label="Maximální hodnota FlexDeriv", id="piky_FlexDeriv", value=config.get("FlexDer")),
+            dmc.Stack(gap=25, children=[
+
+                dmc.Checkbox("Zobrazit vyhodnocení neurokit2", id="chbox_piky_neurokit2", checked=False, size="lg"),
+                dmc.Checkbox("Zobrazit meze ideálního signálu", id="chbox_piky_meze", checked=True, size="lg"),
+            ])
         ]),
         dmc.Space(h=10),
 

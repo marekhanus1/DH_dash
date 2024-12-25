@@ -47,21 +47,21 @@ class DashMain(DashCallbacks):
 
         self.fig.register_update_graph_callback(app=self.app, graph_id="graph-id")
         self.fig.register_update_graph_callback(app=self.app, graph_id="epochy_graph")
+        self.fig.register_update_graph_callback(app=self.app, graph_id="piky_graph")
 
 
         if __name__ == '__main__':
-            self.app.run_server(debug=True, port=5001) #,dev_tools_ui=False,dev_tools_props_check=False
+            self.app.run_server(debug=True, port=5000) #,dev_tools_ui=False,dev_tools_props_check=False
 
 DashMain()
 
 
 # TODO
-# POHYB V TABULCE JE K HOVNU - done!!!!!
-# Zvětšit labely v grafu - done
-# Přidat funkci zobrazit poslední měření - done, junky
-# Pík analyzér
-    # Přidat do nastavení pík analyzér - range slider a switch - done
-    # Přidat do nastavení možnost zapnutí/vypnutí pík analyzéru a epoch analyzéru - done
-    #   - Když jsou vypnuté, změnit zobrazení karet - done
+# Dávat ohled na pořadí dat v tabulce - done
+# Zbavit se DatePickeru a nahradit ho selectem, který čte hodnoty z RPi
+# Pik analyzer:
+    # Přidat do píků čáry z EKG ANALYTIK
+    # Nahradit range picker za dva number inputy
+    # Object dtype dtype('O') has no native HDF5 equivalent
 
 

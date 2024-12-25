@@ -69,7 +69,7 @@ class FormCallbacks(Utils):
             config_names = ["rangeSW",  "butter_SW", "vrub_SW", "flexbutter_sw", "epoch_switch" , "pik_switch",
                                     "date", "pik_limit", "flex_prom", 
                                     "ssh", "exportEKG", 
-                                    "rangeMax", "rangeMin", "butter_val", "vrub_val",  "flexbutter_val", "epoch_delka",  "pik_rangeMax", "pik_rangeMin"]
+                                    "rangeMax", "rangeMin", "butter_val", "vrub_val",  "flexbutter_val", "epoch_delka",  "pik_rangeStart", "pik_rangeEnd"]
             index = 0
             for i in inputs:
                 for j in i:
@@ -104,7 +104,7 @@ class FormCallbacks(Utils):
                 print(callback_context.triggered[0]["prop_id"])
                 
 
-                # (n_clicks, n_clicks2 , [rangeSW, butterSW, vrubSW, flexbutterSW, epochySW, pikySW], [date, limit, flex_prom], [ssh, export], [range_val, butter_val, vrub_val, flexbutter_val])
+                # (n_clicks, n_clicks2 , [rangeSW, butterSW, vrubSW, flexbutterSW, epochySW, pikySW], [date, limit, flex_prom], [ssh, export], [range_val, butter_val, vrub_val, flexbutter_val, epoch_delka, pik_rangeStart, pik_rangeStop])
                 
                 inputs = inputs[2:]
                 
@@ -116,7 +116,7 @@ class FormCallbacks(Utils):
                     config_names = ["rangeSW",  "butter_SW", "vrub_SW", "flexbutter_sw", "epoch_switch" , "pik_switch",
                                     "date", "pik_limit", "flex_prom", 
                                     "ssh", "exportEKG", 
-                                    "rangeMax", "rangeMin", "butter_val", "vrub_val",  "flexbutter_val", "epoch_delka",  "pik_rangeMax", "pik_rangeMin"]
+                                    "rangeMax", "rangeMin", "butter_val", "vrub_val",  "flexbutter_val", "epoch_delka",  "pik_rangeStart", "pik_rangeEnd"]
                     
                     config = Utils.read_config()
                     
@@ -141,6 +141,12 @@ class FormCallbacks(Utils):
                         start_time = self.minutes_to_time(i[0])
                         end_time = self.minutes_to_time(i[1])
                         inputs[3][index] = f"{start_time}-{end_time}"
+
+                print(inputs)
+                inputs[3][-2] = f"{inputs[3][-2]}-{inputs[3][-1]}"
+                
+                inputs = list(inputs)
+                inputs[-1] = inputs[-1][:-1]
 
                 print(inputs)
                 for index, i in enumerate(inputs[0]):

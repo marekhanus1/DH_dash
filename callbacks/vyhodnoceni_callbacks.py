@@ -12,6 +12,8 @@ class VyhodnoceniCallbacks(Utils):
         self.folder_names = ["EKG", "FLEX", "HR A RESP", "EPOCHY"]
         self.HR_names = np.array(["epochy_HR", "epochy_RESP", "epochy_RR-min", "epochy_RR-max", "epochy_SDNN", "epochy_RMSSD", "epochy_FlexDer"], dtype=object)
         self.Piky_names = np.array(["peaks_P", "peaks_PR", "peaks_Q", "peaks_QTc"], dtype=object)
+        self.Piky_points_names = np.array(['ECG_P_Peaks', 'ECG_P_Onsets', 'ECG_P_Offsets', 'ECG_Q_Peaks', 'ECG_R_Onsets', 'ECG_R_Offsets', 'ECG_S_Peaks', 'ECG_T_Peaks', 'ECG_T_Onsets', 'ECG_T_Offsets'], dtype=object)
+
 
         self.data_names = np.array([["ekg", "ekgraw"],
                                     ["flex", "flexraw"],                             
@@ -109,7 +111,7 @@ class VyhodnoceniCallbacks(Utils):
                     print(data_names, time_names)
 
                     if self.args["pik_range"] != None:
-                        data_names = np.array(data_names.tolist() + [self.Piky_names.tolist()], dtype=object)
+                        data_names = np.array(data_names.tolist() + [self.Piky_names.tolist()]+ [self.Piky_points_names.tolist()], dtype=object)
                         time_names = np.array(time_names + ["peaks_time"], dtype=object)
 
                     

@@ -105,7 +105,7 @@ class ReadAndDecode:
         
         # EKG FILTRY
         if self.args["vrubovy"] != None:
-            b, a = signal.iirnotch(self.args["vrubovy"], 50, fs=500)  # notch filter
+            b, a = signal.iirnotch(50, self.args["vrubovy"], fs=500)  # notch filter
             self.ekg_values = list(signal.filtfilt(b, a, self.ekg_values))
 
         if self.args["butterworth"] != None:

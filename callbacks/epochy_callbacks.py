@@ -145,12 +145,12 @@ class EpochyCallbacks(Utils):
 
 
         @self.app.callback(
-            Output("epochy_graph", "figure"),
+            Output("epochy_graph", "figure"), Output("epochy_gridtable", "scrollTo"),
             Input("epochy_gridtable", "selectedRows"),
-            
+            State("epochy_gridtable", "virtualRowData"),
             prevent_initial_call=True,
         )
-        def epochy_show_chart(selection):
+        def epochy_show_chart(selection, row_data):
             ctx = callback_context
             if len(ctx.triggered) and "epochy_gridtable" in ctx.triggered[0]["prop_id"] and len(ctx.triggered[0]["value"]) > 0:
                 # Note how the replace method is used here on the global figure object
@@ -185,10 +185,12 @@ class EpochyCallbacks(Utils):
                                         )
                                     )
 
-                
-                return self.fig
+                # Zobraz část tabulky, kde se nachází vybraná epocha
+                selected_index = next((i for i, item in enumerate(row_data) if item['Číslo epochy'] == cislo_epochy+1), None)
+                scroll_to = {"data": row_data[selected_index]}
+                return self.fig, scroll_to
             else:
-                return no_update
+                return no_update, no_update
             
         self.app.clientside_callback(
             """
@@ -312,14 +314,18 @@ class EpochyCallbacks(Utils):
             Input("epochy_arrowdown_button", "n_clicks"),
             Input("epochy_arrowup_button", "n_clicks"),
             State("epochy_gridtable", "selectedRows"),
-            State("epochy_gridtable", "rowData"),
+            State("epochy_gridtable", "virtualRowData"),
             prevent_initial_call=True
         )
         
         def arrow_movement(up,down,selected_rows,row_data):
             print(ctx.triggered_id)
 
-            selected_index = selected_rows[0]["Číslo epochy"] - 1
+            print(row_data)
+            cislo_epochy = selected_rows[0]["Číslo epochy"]
+            selected_index = next((i for i, item in enumerate(row_data) if item['Číslo epochy'] == cislo_epochy), None)
+
+            #print(selected_index)
 
             if ctx.triggered_id == "epochy_arrowdown_button":
                 print("DOWN")
@@ -328,6 +334,7 @@ class EpochyCallbacks(Utils):
             elif ctx.triggered_id == "epochy_arrowup_button":
                 print("UP")
                 new_selected_row = row_data[selected_index - 1] if selected_index > 0 else row_data[selected_index]
+
 
             return [new_selected_row], {"data": new_selected_row}
 
@@ -338,11 +345,12 @@ class EpochyCallbacks(Utils):
             Input('epochy_category_s', 'n_clicks'),
             Input('epochy_category_n', 'n_clicks'),
             State('epochy_gridtable', 'selectedRows'),
-            State('epochy_gridtable', 'rowData'),
+            State('epochy_gridtable', 'rowData'),        # rowData == všechna data v původním pořadí
+            State('epochy_gridtable', 'virtualRowData'), # virtualRowData == aktuální pořadí dat (s uživatelskými filtry)
             State("epochy_gridtable", "scrollTo"), 
             prevent_initial_call=True
         )
-        def set_category(n_clicks_a, n_clicks_s, n_clicks_n, selected_rows, row_data, scroll_to):
+        def set_category(n_clicks_a, n_clicks_s, n_clicks_n, selected_rows, row_data, virtualRowData, scroll_to):
             
             if not selected_rows:
                 return no_update, no_update, no_update, no_update  # No row selected, return current data unchanged
@@ -358,14 +366,14 @@ class EpochyCallbacks(Utils):
             elif ctx.triggered_id == "epochy_category_n":
                 category = 'N'
                 
+            cislo_epochy = selected_rows[0]["Číslo epochy"]
+            selected_index = next((i for i, item in enumerate(virtualRowData) if item['Číslo epochy'] == cislo_epochy), None) # Zjisti index vybraného řádku v tabulce pomocí virtualRowData
+
             # Update the category in the selected row
-            row_data[selected_rows[0]['Číslo epochy'] - 1]["hodnoceni"] = category
-            
-            # Find the index of the selected row in the current sorted order
-            selected_index = next(i for i, row in enumerate(row_data) if row['Číslo epochy'] == selected_rows[0]['Číslo epochy'])
+            row_data[selected_rows[0]["Číslo epochy"]-1]["hodnoceni"] = category # VirtualRowData nemůže být použito na měnění hodnoty v tabulce
 
             # Select the row below the current one
-            row_below = row_data[selected_index + 1] if selected_index < len(row_data) - 1 else row_data[selected_index]
+            row_below = virtualRowData[selected_index + 1] if selected_index < len(virtualRowData) - 1 else virtualRowData[selected_index] # zjisti další řádek v tabulce pomocí virtualRowData
             print(row_below)
 
             return row_data, [row_below], DashIconify(icon="la:save", width=40, id="epochy_save_icon"), {"data": row_below}
@@ -385,7 +393,7 @@ class EpochyCallbacks(Utils):
 
         # Write category to all empty cells
         @self.app.callback(
-            [Output('epochy_gridtable', 'rowData', allow_duplicate=True), Output("epochy_gridtable", "selectedRows", allow_duplicate=True), Output("epochy_save", "children", allow_duplicate=True)],
+            [Output('epochy_gridtable', 'rowData', allow_duplicate=True),  Output("epochy_save", "children", allow_duplicate=True)],
             Input('epochy_category_a_shift', 'n_clicks'),
             Input('epochy_category_s_shift', 'n_clicks'),
             Input('epochy_category_n_shift', 'n_clicks'),
@@ -395,7 +403,7 @@ class EpochyCallbacks(Utils):
         )
         def set_empty_category(n_clicks_a, n_clicks_s, n_clicks_n, selected_rows, row_data):
             if not selected_rows:
-                return no_update, no_update, no_update
+                return no_update, no_update
             
             category = None
             if ctx.triggered_id == "epochy_category_a_shift":
@@ -413,7 +421,7 @@ class EpochyCallbacks(Utils):
             # Connect empty rows with row_data
             for row in empty_rows:
                 row_data[row["Číslo epochy"] - 1] = row
-            return row_data, no_update, DashIconify(icon="la:save", width=40, id="epochy_save_icon")
+            return row_data, DashIconify(icon="la:save", width=40, id="epochy_save_icon")
         
 
         @self.app.callback(

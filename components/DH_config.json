@@ -15,13 +15,13 @@
     "exportEKG": false,
     "epoch_switch": true,
     "epoch_delka": 30,
-    "pik_switch": false,
-    "pik_rangeMin": 1410,
-    "pik_rangeMax": 1420,
+    "pik_switch": true,
     "RR_min": 400,
     "RR_max": 2000,
     "SDNN": 500,
     "RMSSD": 500,
     "FlexDeriv": 30,
-    "FlexDer": 29
+    "FlexDer": 29,
+    "pik_rangeStart": "23:50",
+    "pik_rangeEnd": "23:59"
 }

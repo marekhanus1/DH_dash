@@ -192,17 +192,22 @@ def show_tabs(disabled=False):
                     checked=config.get('pik_switch'), disabled=disabled
                 ),
 
-                html.Div([
-                    dmc.RangeSlider(
-                        id={"type": "nastaveni_inputSW", "index": 'pik_time-range-slider'},
-                        max=1439,
-                        step=10,  # Step by 10 minutes
-                        value=[config.get('pik_rangeMin'), config.get('pik_rangeMax')], 
-                        # Show time every 2 hours (120 minutes)
-                        marks=[{"value":i, "label":Utils.minutes_to_time(None,i)} for i in range(0, 1440, 120)],
-                        w=800, disabled=disabled
-                    ),
-                    html.Div(id='pik_output-time-range', style={'marginTop': 20}),
+                html.Div(children=[
+                    dmc.Group(gap=50, children=[
+                        
+                        dmc.TimeInput(
+                            label="Čas začátku vyhodnocení",
+                            value=config.get('pik_rangeStart'),
+                            id={"type": "nastaveni_inputSW", "index": 'pik_time-start'},
+                            w=250,
+                        ),
+                        dmc.TimeInput(
+                            label="Čas konce vyhodnocení",
+                            value=config.get('pik_rangeEnd'),
+                            id={"type": "nastaveni_inputSW", "index": 'pik_time-end'},
+                            w=250,
+                        ),
+                    ]),
                 ], id="pik_time_range_div", hidden=True),
                     
             ],withBorder=True,

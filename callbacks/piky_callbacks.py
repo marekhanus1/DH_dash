@@ -11,7 +11,7 @@ from components.piky_content import columnDefs
 class PikyCallbacks(Utils):
     def piky_callbacks(self):
         #######################################################################################
-        ############################################ piky ###################################
+        ############################################ PÍKY ###################################
         #######################################################################################
         @self.app.callback(
             Output("piky_drawer", "opened"),
@@ -26,16 +26,23 @@ class PikyCallbacks(Utils):
 
 
         @self.app.callback(
-            [
-            Output("piky_gridtable", "rowData")],
+            [Output("piky_gridtable", "rowData")],
             Input("piky_submitbutton", "n_clicks"),
             #[State(i, "value") for i in ["piky_RRmin", "piky_RRmax", "piky_SDNN", "piky_RMSSD", "piky_FlexDeriv"]],
+            State("chbox_piky_neurokit2", "checked"), State("chbox_piky_meze", "checked"),
             prevent_initial_call=True
 
         )
         def piky_set_limits(*inputs):
             if inputs[0]:
                 
+                self.zobraz_cary = [False, False]
+                if inputs[1] == True:
+                    self.zobraz_cary[0] = True
+                if inputs[2] == True:
+                    self.zobraz_cary[1] = True
+                    
+
                 row_data = self.piky_data.to_dict("records")
                 return [row_data]
             else:
@@ -48,7 +55,7 @@ class PikyCallbacks(Utils):
         @self.app.callback(
             Output("piky_graph", "figure"), Output("piky_gridtable", "scrollTo", allow_duplicate=True),
             Input("piky_gridtable", "selectedRows"),
-            State("piky_gridtable", "rowData"),
+            State("piky_gridtable", "virtualRowData"),
             
             prevent_initial_call=True,
         )
@@ -70,17 +77,39 @@ class PikyCallbacks(Utils):
                 for i in range(len(self.time["ekgtime"])):
                     if self.time["peaks_time"][cislo_piky] == self.time["ekgtime"][i]:
                         break
+                pik_index = i
                 start = int(i-250*delka_piky_s)
                 end = int(i+250*delka_piky_s)
                 
 
 
-                ekg_epocha = list(self.data["ekg"][start:end])
-                ekg_epocha_cz = list(self.time["ekgtime"][start:end])
+                ekg_pik = list(self.data["ekg"][start:end])
+                ekg_pik_cz = list(self.time["ekgtime"][start:end])
             
 
-                self.fig.add_trace(go.Scattergl(name=f"EKG Pík {cislo_piky}"), hf_x=ekg_epocha_cz, hf_y=ekg_epocha)
+                self.fig.add_trace(go.Scattergl(name=f"EKG Pík {cislo_piky}"), hf_x=ekg_pik_cz, hf_y=ekg_pik)
                 
+                self.fig.add_vline(x=self.time["peaks_time"][cislo_piky].timestamp() * 1000, line_dash="dot", line_color="red", line_width=1, annotation_text="R pík")
+
+                print(self.time["ekgtime"][pik_index-30])
+                
+                if self.zobraz_cary[1] == True:
+                    self.fig.add_vline(x=self.time["ekgtime"][pik_index-30].timestamp() * 1000, line_dash="dash", line_color="red", line_width=2, annotation_text="-60 ms") # 60 ms before peak
+                    self.fig.add_vline(x=self.time["ekgtime"][pik_index+30].timestamp() * 1000, line_dash="dash", line_color="red", line_width=2, annotation_text="+60 ms") # 60 ms after peak
+
+                    self.fig.add_vline(x=self.time["ekgtime"][pik_index-60].timestamp() * 1000, line_dash="dash", line_color="orange", line_width=2, annotation_text="-120 ms") # 120 ms before peak
+                    self.fig.add_vline(x=self.time["ekgtime"][pik_index-110].timestamp() * 1000, line_dash="dash", line_color="orange", line_width=2, annotation_text="-180 ms") # 180 ms before peak
+
+                    self.fig.add_vline(x=self.time["ekgtime"][pik_index+160].timestamp() * 1000, line_dash="dash", line_color="blue", line_width=2, annotation_text="+320 ms") # 320 ms after peak
+                    self.fig.add_vline(x=self.time["ekgtime"][pik_index+225].timestamp() * 1000, line_dash="dash", line_color="blue", line_width=2, annotation_text="+450 ms") # 450 ms after peak
+                
+                #['ECG_P_Peaks', 'ECG_P_Onsets', 'ECG_P_Offsets', 'ECG_Q_Peaks', 'ECG_R_Onsets', 'ECG_R_Offsets', 'ECG_S_Peaks', 'ECG_T_Peaks', 'ECG_T_Onsets', 'ECG_T_Offsets']
+
+                if cislo_piky != 0 and self.zobraz_cary[0] == True:
+                    for i in self.Piky_points_names:
+                        if self.data[i][cislo_piky] != 0:
+                            self.fig.add_vline(x=self.data[i][cislo_piky] * 1000, line_dash="dash", line_color="pink", line_width=2, annotation_text=i.replace("ECG_", ""))
+                    
 
                 self.fig.update_layout(template="plotly_dark", margin=dict(l=125, r=0, t=0, b=50),
                                        xaxis=dict(
@@ -99,8 +128,9 @@ class PikyCallbacks(Utils):
                                     )
 
                 
-                selected_row = row_data[cislo_piky]
-                return self.fig, {"data": selected_row}
+                selected_index = next((i for i, item in enumerate(row_data) if item['Číslo piku'] == cislo_piky+1), None)
+                scroll_to = {"data": row_data[selected_index]}
+                return self.fig, scroll_to
             else:
                 return no_update, no_update
             
@@ -226,7 +256,7 @@ class PikyCallbacks(Utils):
             Input("piky_arrowdown_button", "n_clicks"),
             Input("piky_arrowup_button", "n_clicks"),
             State("piky_gridtable", "selectedRows"),
-            State("piky_gridtable", "rowData"),
+            State("piky_gridtable", "virtualRowData"),
             prevent_initial_call=True
         )
         
@@ -234,7 +264,8 @@ class PikyCallbacks(Utils):
             print(ctx.triggered_id)
             print(up, down)
 
-            selected_index = selected_rows[0]["Číslo piku"] - 1
+            cislo_piku = selected_rows[0]["Číslo piku"]
+            selected_index = next((i for i, item in enumerate(row_data) if item['Číslo piku'] == cislo_piku), None)
 
             if ctx.triggered_id == "piky_arrowdown_button":
                 new_selected_row = row_data[selected_index + 1] if selected_index < len(row_data) - 1 else row_data[selected_index]
@@ -251,11 +282,12 @@ class PikyCallbacks(Utils):
             Input('piky_category_s', 'n_clicks'),
             Input('piky_category_n', 'n_clicks'),
             State('piky_gridtable', 'selectedRows'),
-            State('piky_gridtable', 'rowData'),
+            State('piky_gridtable', 'rowData'),        # rowData == všechna data v původním pořadí
+            State('piky_gridtable', 'virtualRowData'), # virtualRowData == aktuální pořadí dat (s uživatelskými filtry)
             State("piky_gridtable", "scrollTo"), 
             prevent_initial_call=True
         )
-        def set_category(n_clicks_a, n_clicks_s, n_clicks_n, selected_rows, row_data, scroll_to):
+        def set_category(n_clicks_a, n_clicks_s, n_clicks_n, selected_rows, row_data, virtualRowData, scroll_to):
             
             if not selected_rows:
                 return no_update, no_update, no_update  # No row selected, return current data unchanged
@@ -275,10 +307,11 @@ class PikyCallbacks(Utils):
             row_data[selected_rows[0]['Číslo píku'] - 1]["hodnoceni"] = category
             
             # Find the index of the selected row in the current sorted order
-            selected_index = next(i for i, row in enumerate(row_data) if row['Číslo píku'] == selected_rows[0]['Číslo píku'])
+            cislo_piku = selected_rows[0]["Číslo piku"]
+            selected_index = next((i for i, item in enumerate(virtualRowData) if item['Číslo píku'] == cislo_piku), None) # Zjisti index vybraného řádku v tabulce pomocí virtualRowData
 
             # Select the row below the current one
-            row_below = row_data[selected_index + 1] if selected_index < len(row_data) - 1 else row_data[selected_index]
+            row_below = virtualRowData[selected_index + 1] if selected_index < len(virtualRowData) - 1 else virtualRowData[selected_index]
             print(row_below)
 
             return row_data, [row_below], DashIconify(icon="la:save", width=40, id="piky_save_icon"), {"data": row_below}
@@ -294,7 +327,7 @@ class PikyCallbacks(Utils):
 
         # Write category to all empty cells
         @self.app.callback(
-            [Output('piky_gridtable', 'rowData', allow_duplicate=True), Output("piky_gridtable", "selectedRows", allow_duplicate=True), Output("piky_save", "children", allow_duplicate=True)],
+            [Output('piky_gridtable', 'rowData', allow_duplicate=True), Output("piky_save", "children", allow_duplicate=True)],
             Input('piky_category_a_shift', 'n_clicks'),
             Input('piky_category_s_shift', 'n_clicks'),
             Input('piky_category_n_shift', 'n_clicks'),
@@ -304,7 +337,7 @@ class PikyCallbacks(Utils):
         )
         def set_empty_category(n_clicks_a, n_clicks_s, n_clicks_n, selected_rows, row_data):
             if not selected_rows:
-                return no_update, no_update, no_update
+                return no_update, no_update
             
             category = None
             if ctx.triggered_id == "piky_category_a_shift":
@@ -322,7 +355,7 @@ class PikyCallbacks(Utils):
             # Connect empty rows with row_data
             for row in empty_rows:
                 row_data[row["Číslo píku"] - 1] = row
-            return row_data, no_update, DashIconify(icon="la:save", width=40, id="piky_save_icon")
+            return row_data, DashIconify(icon="la:save", width=40, id="piky_save_icon")
         
 
         @self.app.callback(
