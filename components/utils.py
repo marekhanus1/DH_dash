@@ -6,8 +6,7 @@ import json
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 import subprocess
-import platform
-
+import paramiko
 
 class Utils():
     def minutes_to_time(self,minutes):
@@ -116,9 +115,13 @@ class Utils():
         return info_content
     
 
-    def get_dates_from_filenames(files):
+    def get_dates_from_filenames(typ, files=None):
         dates = {}
         
+        if typ == "local":
+            folder_path = "holter_vysledky"
+            files = os.listdir(folder_path)
+
         
         month_names = {
             1: "Leden", 2: "Únor", 3: "Březen", 4: "Duben",
@@ -159,13 +162,11 @@ class Utils():
         datum_content = []
         if value == "normal":
             config = Utils.read_config()
-            folder_path = "holter_vysledky"
-
-            files = os.listdir(folder_path)
+            
 
             datum_content = dmc.Select(
                         id={"type": "nastaveni_input", "index":"datum_input"},
-                        data=Utils.get_dates_from_filenames(files),
+                        data=Utils.get_dates_from_filenames("local"),
                         value=config.get("date"),
                         leftSection=DashIconify(icon="clarity:date-line"),
                         w=300,
@@ -183,10 +184,19 @@ class Utils():
             if self.is_connected_to_ap(ssid):
                 print(f"Connected to the network '{ssid}'.")
                 
+                # Configuration
+                host = "192.168.4.1"  # Raspberry Pi's IP address
+                username = "pi"       # Pi's username
+                password = "raspberry"  # Pi's password
+                remote_path = "/home/pi/Holter_bluetooth/holter_vysledky"
+
+                # List files in the remote directory
+                files = self.list_remote_directory(host, username, password, remote_path)
+
+
                 datum_content = dmc.Select(
                         id={"type": "nastaveni_input", "index":"datum_input"},
-                        data=Utils.get_dates_from_filenames(files),
-                        value=config.get("date"),
+                        data=Utils.get_dates_from_filenames("RPi",files=files),
                         leftSection=DashIconify(icon="clarity:date-line"),
                         w=300,
                         withScrollArea=False,
@@ -242,3 +252,22 @@ class Utils():
         except subprocess.CalledProcessError as e:
             print(f"Error while checking network: {e}")
             return False
+        
+
+    def list_remote_directory(self,host, username, password, remote_path):
+        try:
+            # Establish an SSH client
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(hostname=host, username=username, password=password)
+
+            # Execute the ls command on the remote directory
+            stdin, stdout, stderr = ssh.exec_command(f"ls -1 {remote_path}")
+            # Read the output and split by lines
+            files = stdout.read().decode().splitlines()
+
+            ssh.close()
+            return files
+        except Exception as e:
+            print(f"Error: {e}")
+            return []

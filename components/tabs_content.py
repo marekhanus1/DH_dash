@@ -36,13 +36,13 @@ def show_tabs(disabled=False):
                     children=[
                         dmc.Select(
                             id={"type": "nastaveni_input", "index": "datum_input"},
-                            data=Utils.get_dates_from_filenames(),
+                            data=Utils.get_dates_from_filenames("local"),
                             value=config.get("date"),
                             leftSection=DashIconify(icon="clarity:date-line"),
                             w=200,
                             mb=10,
                             disabled=disabled
-
+                            
                         ),
                     ], id="datum_div"
                 ),
