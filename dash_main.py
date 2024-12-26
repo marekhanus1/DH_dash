@@ -57,11 +57,11 @@ DashMain()
 
 
 # TODO
-# Dávat ohled na pořadí dat v tabulce - done
 # Zbavit se DatePickeru a nahradit ho selectem, který čte hodnoty z RPi
+# Konečně spravit tu Filtr tabulku
 # Pik analyzer:
-    # Přidat do píků čáry z EKG ANALYTIK
-    # Nahradit range picker za dva number inputy
-    # Object dtype dtype('O') has no native HDF5 equivalent
+    # Upravit hodnoty v tabulce podle SOČ
+    # Přidat vyhodnocení arytmie, vyhodnocení RR_avg a FlexDER podle epoch 
+    # Error s make_subplots (tvoří se až moc grafů, které se nemažou???)
 
 

@@ -66,7 +66,7 @@ class DecodeHolter(ReadAndDecode, AnalyseHR, AnalysePeaks):
         self.shared_data["stage"] = 3 # Fáze tři - FLEX přečten
 
         print("ANALYZE EPOCHS...")
-        if self.args["epocha"] != None:
+        if self.args["epocha"] != None or self.args["pik_range"] != None:
             self.analyze_epochs() 
 
         self.shared_data["stage"] = 4 # Fáze čtyři - analýza epoch dokončena
@@ -119,8 +119,9 @@ class DecodeHolter(ReadAndDecode, AnalyseHR, AnalysePeaks):
                 f.create_dataset("peaks_time", data=self.peaks_stats["time"], compression="gzip")
                 f.create_dataset("peaks_P", data=self.peaks_stats["P"], compression="gzip")
                 f.create_dataset("peaks_PR", data=self.peaks_stats["PR"], compression="gzip")
-                f.create_dataset("peaks_Q", data=self.peaks_stats["Q"], compression="gzip")
+                f.create_dataset("peaks_QRS", data=self.peaks_stats["QRS"], compression="gzip")
                 f.create_dataset("peaks_QTc", data=self.peaks_stats["QTc"], compression="gzip")
+                f.create_dataset("peaks_FlexDer", data=self.peaks_stats["FlexDer"], compression="gzip")
 
                 for key in self.ecg_peak_values:
                     f.create_dataset(key, data=self.ecg_peak_values[key], compression="gzip")

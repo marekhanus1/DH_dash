@@ -13,6 +13,39 @@ class FormCallbacks(Utils):
 
 
         @self.app.callback(
+            Output({"type": "nastaveni_inputSW", "index": 'pik_time-start'}, "error"), 
+            Output({"type": "nastaveni_inputSW", "index": 'pik_time-end'}, "error"),
+            Output("submit-button", "disabled"),
+
+            Input({"type": "nastaveni_inputSW", "index": 'pik_time-start'}, "value"), 
+            Input({"type": "nastaveni_inputSW", "index": 'pik_time-end'}, "value")
+        )
+        def validate_time_input(start, end):
+            
+            error_status = [False, False]
+            # Check if time is in format HH:MM
+            error_messages = "Čas musí být ve formátu HH:MM"
+            if start != None:
+                if not self.validate_time(start):
+                    error_status[0] = error_messages
+            if end != None:
+                if not self.validate_time(end):
+                    error_status[1] = error_messages
+
+            # Check if start time is before end time
+            if error_status == [False,False]:
+                if start != None and end != None:
+                    if not self.compare_time(start, end):
+                        error_status[0] = "Čas začátku musí být před časem konce"
+                        error_status[1] = "Čas konce musí být po čase začátku"
+            
+            disable_submit = False
+            if error_status[0] != False or error_status[1] != False:
+                disable_submit = True
+
+            return error_status[0], error_status[1], disable_submit
+
+        @self.app.callback(
             [Output('time_range_div', 'hidden')]+
             [Output({"type": "nastaveni_inputSW","index":component_id}, 'darkHidden') for component_id in ['arg_butter', 'arg_vrub', 'arg_butterflex', 'epoch_delka']] +
             [Output('pik_time_range_div', 'hidden')],

@@ -10,10 +10,10 @@ columnDefs = [
     {"headerName": "Čas piku", 'field': 'Čas piku' },
     {"headerName": "P", 'field': 'peaks_P'},
     {"headerName": "PR", 'field': 'peaks_PR'},
-    {"headerName": "Q", 'field': 'peaks_Q'},
+    {"headerName": "QRS", 'field': 'peaks_QRS'},
     {"headerName": "QTc", 'field': 'peaks_QTc' },
-    #{"headerName": "FlexDer", 'field': 'piky_FlexDer' },
-    #{"headerName": "Arytmie", 'field': 'arytmie'},
+    {"headerName": "FlexDer", 'field': 'peaks_FlexDer' },
+    {"headerName": "Arytmie", 'field': 'arytmie'},
     {'headerName': 'Hodnocení', 'field': 'hodnoceni', 'editable': True}
     
 ]
@@ -28,7 +28,7 @@ def show_piky():
         columnDefs=columnDefs,
         className="ag-theme-alpine-dark",
         columnSize="sizeToFit",
-        style={"height": "40vh", "width": "100%"},
+        style={"height": "40vh", "width": "95%"},
         defaultColDef={"filter": True},
         dashGridOptions = {'rowSelection': 'single', 'animateRows': False}
     )

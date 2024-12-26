@@ -19,7 +19,7 @@ class AnalysePeaks:
         
         peaks_in_ms = [ekg_pik_casova_znacka[j] for j in peaks] # .timestamp() # Časová značka R píků v sekundách
 
-        RR_avg = np.average(np.diff(peaks_in_ms)) # RR interval in seconds
+        
                             
         _, ecg_peak_values = nk.ecg_delineate(ekg_pik_values, peaks, sampling_rate=self.vzorkovaci_frekvence, method="dwt") # Najdi všechny důležité body na EKG
 
@@ -42,18 +42,32 @@ class AnalysePeaks:
                     print(f"MOVED T {i} - {cislo_piku}")
 
         
-        print("RR_avg: ", RR_avg)
-        self.shared_data["RR_avg"] = RR_avg
+        
+
 
 
         P_distance = []
         PR_distance = []
-        Q_distance = []
+        QRS_distance = []
         QTc_distance = []
         flex_der = []
+        RR_avg = []
+
+        index_epochy = 1
+
         for i in range(len(peaks)-1):
+            while self.epoch_stats["time"][index_epochy] <= peaks_in_ms[i]: # Najdi epochu, ve které se nachází R pík pro určení RR_avg a FlexDer
+                index_epochy += 1
+                if index_epochy == len(self.epoch_stats["time"]): # Zajisti, aby nedošlo k přetečení
+                    break
+            
+            index_epochy -= 1 # Vrať se o jednu epochu zpět (Tam se R pík nachází)
+
+            flex_der.append(self.epoch_stats["FlexDer"][index_epochy])
+            RR_avg = self.epoch_stats["RR_avg"][index_epochy]
+
             try:
-                if ecg_peak_values['ECG_P_Onsets'][i] != "nan" or ecg_peak_values['ECG_P_Offsets'][i] != "nan":
+                if ecg_peak_values['ECG_P_Onsets'][i] != 0 and ecg_peak_values['ECG_P_Offsets'][i] != 0:
                     P = (ecg_peak_values['ECG_P_Offsets'][i] - ecg_peak_values['ECG_P_Onsets'][i])*1000
                     P_distance.append(round(P, 2))
 
@@ -63,7 +77,7 @@ class AnalysePeaks:
                 P_distance.append(None)
 
             try:
-                if ecg_peak_values['ECG_R_Onsets'][i] != "nan" or ecg_peak_values['ECG_P_Onsets'][i] != "nan":
+                if ecg_peak_values['ECG_R_Onsets'][i] != 0 and ecg_peak_values['ECG_P_Onsets'][i] != 0:
                     PR = (ecg_peak_values['ECG_R_Onsets'][i] - ecg_peak_values['ECG_P_Onsets'][i]) * 1000
                     PR_distance.append(round(PR, 2))
                 else:
@@ -72,17 +86,19 @@ class AnalysePeaks:
                 PR_distance.append(None)
             
             try:
-                if ecg_peak_values['ECG_R_Onsets'][i] != "nan" or ecg_peak_values['ECG_Q_Peaks'][i] != "nan":
-                    Q = (ecg_peak_values['ECG_Q_Peaks'][i] - ecg_peak_values['ECG_R_Onsets'][i]) * 1000
-                    Q_distance.append(round(Q, 2))
+                if ecg_peak_values['ECG_R_Onsets'][i] != 0 and ecg_peak_values['ECG_R_Offsets'][i] != 0:
+                    QRS = (ecg_peak_values['ECG_R_Offsets'][i] - ecg_peak_values['ECG_R_Onsets'][i]) * 1000
+                    QRS_distance.append(round(QRS, 2))
                 else:
-                    Q_distance.append(None)
+                    QRS_distance.append(None)
             except:
-                Q_distance.append(None)
+                QRS_distance.append(None)
 
             try:
-                if ecg_peak_values['ECG_T_Offsets'][i] != "nan" or ecg_peak_values['ECG_R_Onsets'][i] != "nan":            
-                    QTc = round(((ecg_peak_values['ECG_T_Offsets'][i] - ecg_peak_values['ECG_R_Onsets'][i])) * 1000 / np.sqrt(RR_avg * 1000),2)
+                if ecg_peak_values['ECG_T_Offsets'][i] != 0 and ecg_peak_values['ECG_R_Onsets'][i] != 0:  
+                    QT = (ecg_peak_values['ECG_T_Offsets'][i] - ecg_peak_values['ECG_R_Onsets'][i]) * 1000  
+                            
+                    QTc = round(QT / np.sqrt(RR_avg/1000),2)
                     QTc_distance.append(QTc)
                 else:
                     QTc_distance.append(None)
@@ -96,13 +112,15 @@ class AnalysePeaks:
 
 
         self.ecg_peak_values = ecg_peak_values
+        
 
         self.peaks_stats = {
             "time":np.array(peaks_in_ms[:-1]).astype(np.float64),
             "P": np.array(P_distance).astype(np.float64),
             "PR": np.array(PR_distance).astype(np.float64),
-            "Q": np.array(Q_distance).astype(np.float64),
+            "QRS": np.array(QRS_distance).astype(np.float64),
             "QTc": np.array(QTc_distance).astype(np.float64),
+            "FlexDer": np.array(flex_der).astype(np.float64)
 
         }
 

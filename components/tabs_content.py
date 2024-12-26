@@ -98,26 +98,39 @@ def show_tabs(disabled=False):
                 
                 dmc.Space(h=20),
 
-                
-                dmc.SimpleGrid(cols=2,spacing="xs", verticalSpacing="lg", w=600, children=[
-                    dmc.Switch(
-                        id={"type": "nastaveni_switch", "index": "butter_switch"},
-                        label="Butterworthův filtr",
-                        onLabel="ON",
-                        offLabel="OFF",
-                        checked=config.get('butter_SW'), disabled=disabled
-                    ),
-                    dmc.NumberInput(id={"type": "nastaveni_inputSW", "index": "arg_butter"}, step=0.1, value=config.get('butter_val'), darkHidden=True, disabled=disabled),
 
-                    dmc.Switch(
+                dmc.Grid(children=[
+                    dmc.GridCol([
+                        dmc.Switch(
+                            id={"type": "nastaveni_switch", "index": "butter_switch"},
+                            label="Butterworthův filtr",
+                            onLabel="ON",
+                            offLabel="OFF",
+                            checked=config.get('butter_SW'), disabled=disabled
+                        )
+                    ], span = 6.5),
+                    dmc.GridCol([
+                        dmc.NumberInput(id={"type": "nastaveni_inputSW", "index": "arg_butter"}, step=0.1, value=config.get('butter_val'), darkHidden=True, disabled=disabled),
+                    ], span=5.5),
+
+                    dmc.GridCol([
+                        dmc.Switch(
                         id={"type": "nastaveni_switch", "index": "vrub_switch"},
                         label="Vrubový filtr",
                         onLabel="ON",
                         offLabel="OFF",
                         checked=config.get('vrub_SW'), disabled=disabled
-                    ),
-                    dmc.NumberInput(id={"type": "nastaveni_inputSW", "index": "arg_vrub"}, step=0.1, value=config.get('vrub_val'), darkHidden=True, disabled=disabled)
-                ]),
+                        ),
+                    ], span=6.5),
+
+                    dmc.GridCol([
+                        dmc.NumberInput(id={"type": "nastaveni_inputSW", "index": "arg_vrub"}, step=0.1, value=config.get('vrub_val'), darkHidden=True, disabled=disabled)
+                    ], span=5.5),
+
+                ], w=600),
+
+
+
                 dmc.Space(h=20),
 
                 ##################################################################################################################
@@ -127,16 +140,20 @@ def show_tabs(disabled=False):
                 
                 dmc.Space(h=20),
 
-                dmc.SimpleGrid(cols=2,spacing="xs", verticalSpacing="lg", w=600, children=[
-                    dmc.Switch(
-                        id={"type": "nastaveni_switch", "index": "butterflex_switch"},
-                        label="Butterworthův filtr",
-                        onLabel="ON",
-                        offLabel="OFF",
-                        checked=config.get('flexbutter_sw'), disabled=disabled
-                    ),
-                    dmc.NumberInput(id={"type": "nastaveni_inputSW", "index": "arg_butterflex"}, step=0.1, value=config.get('flexbutter_val'), darkHidden=True, disabled=disabled)
-                ]),
+                dmc.Grid(children=[
+                    dmc.GridCol([
+                        dmc.Switch(
+                            id={"type": "nastaveni_switch", "index": "butterflex_switch"},
+                            label="Butterworthův filtr",
+                            onLabel="ON",
+                            offLabel="OFF",
+                            checked=config.get('flexbutter_sw'), disabled=disabled
+                        ),
+                    ], span=6.5),
+                    dmc.GridCol([
+                        dmc.NumberInput(id={"type": "nastaveni_inputSW", "index": "arg_butterflex"}, step=0.1, value=config.get('flexbutter_val'), darkHidden=True, disabled=disabled)
+                    ], span=5.5),
+                ], w=600),
             ],withBorder=True,
         shadow="sm",
         radius="md",
@@ -195,17 +212,19 @@ def show_tabs(disabled=False):
                 html.Div(children=[
                     dmc.Group(gap=50, children=[
                         
-                        dmc.TimeInput(
+                        dmc.TextInput(
                             label="Čas začátku vyhodnocení",
                             value=config.get('pik_rangeStart'),
                             id={"type": "nastaveni_inputSW", "index": 'pik_time-start'},
                             w=250,
+                            disabled=disabled
                         ),
-                        dmc.TimeInput(
+                        dmc.TextInput(
                             label="Čas konce vyhodnocení",
                             value=config.get('pik_rangeEnd'),
                             id={"type": "nastaveni_inputSW", "index": 'pik_time-end'},
                             w=250,
+                            disabled=disabled
                         ),
                     ]),
                 ], id="pik_time_range_div", hidden=True),

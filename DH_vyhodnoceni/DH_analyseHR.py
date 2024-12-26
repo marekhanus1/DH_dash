@@ -58,7 +58,8 @@ class AnalyseHR:
             "RMSSD": [],
             "SDNN": [],
             "RESP": [],
-            "FlexDer": []
+            "FlexDer": [],
+            "RR_avg": []
         }
         
 
@@ -90,7 +91,7 @@ class AnalyseHR:
                 SDNN = np.sqrt(1/((len(ekg_dif)-1)) * SDNN)
                 
                 HR = round(1000 / np.average(ekg_dif) * 60)
-
+                RR_avg = np.average(ekg_dif)
             # Zapiš data do dictionary
             self.epoch_stats["time"].append(ekg_epocha_cz[0])
 
@@ -100,8 +101,10 @@ class AnalyseHR:
                 self.epoch_stats["RR-max"].append(0)
                 self.epoch_stats["RMSSD"] .append(0)
                 self.epoch_stats["SDNN"]  .append(0)
+                self.epoch_stats["RR_avg"].append(0)
             else:
                 self.epoch_stats["HR"]    .append(HR)
+                self.epoch_stats["RR_avg"].append(RR_avg)
                 self.epoch_stats["RR-min"].append(round(np.min(ekg_dif),2))
 
 

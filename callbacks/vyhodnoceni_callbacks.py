@@ -11,7 +11,7 @@ class VyhodnoceniCallbacks(Utils):
 
         self.folder_names = ["EKG", "FLEX", "HR A RESP", "EPOCHY"]
         self.HR_names = np.array(["epochy_HR", "epochy_RESP", "epochy_RR-min", "epochy_RR-max", "epochy_SDNN", "epochy_RMSSD", "epochy_FlexDer"], dtype=object)
-        self.Piky_names = np.array(["peaks_P", "peaks_PR", "peaks_Q", "peaks_QTc"], dtype=object)
+        self.Piky_names = np.array(["peaks_P", "peaks_PR", "peaks_QRS", "peaks_QTc", "peaks_FlexDer"], dtype=object)
         self.Piky_points_names = np.array(['ECG_P_Peaks', 'ECG_P_Onsets', 'ECG_P_Offsets', 'ECG_Q_Peaks', 'ECG_R_Onsets', 'ECG_R_Offsets', 'ECG_S_Peaks', 'ECG_T_Peaks', 'ECG_T_Onsets', 'ECG_T_Offsets'], dtype=object)
 
 
@@ -95,7 +95,7 @@ class VyhodnoceniCallbacks(Utils):
                     
                     
                     
-                    print(self.data_names)
+                   
                     if self.args["epocha"] != None:
                         self.data_names = np.array([["ekg", "ekgraw"],
                                 ["flex", "flexraw"], 
@@ -104,11 +104,11 @@ class VyhodnoceniCallbacks(Utils):
                                                         #np.array(self.data_names.tolist() + [self.HR_names.tolist()], dtype=object)
                         self.time_names = ["ekgtime", "flextime", "epochy_time", "HR_RESP_time"]
                     
-                    print(self.data_names, self.time_names)
+                    
                     data_names = self.data_names
                     time_names = self.time_names
 
-                    print(data_names, time_names)
+                    
 
                     if self.args["pik_range"] != None:
                         data_names = np.array(data_names.tolist() + [self.Piky_names.tolist()]+ [self.Piky_points_names.tolist()], dtype=object)
@@ -126,6 +126,7 @@ class VyhodnoceniCallbacks(Utils):
                     
                     if self.args["pik_range"] != None:
                         self.piky_data = pd.DataFrame({k: self.data[k] for k in self.Piky_names})
+                        print(self.piky_data)
                         cas_piky = [i.strftime("%H:%M:%S")+ f".{i.microsecond // 100000}" for i in self.time["peaks_time"]]
                         self.piky_data.insert(0, "Čas piku", cas_piky)
                         self.piky_data.insert(0, "Číslo piku", range(1, len(self.piky_data) + 1))

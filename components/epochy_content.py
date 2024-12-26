@@ -30,7 +30,7 @@ def show_epochy():
         columnDefs=columnDefs,
         className="ag-theme-alpine-dark",
         columnSize="sizeToFit",
-        style={"height": "40vh", "width": "100%"},
+        style={"height": "40vh", "width": "95%"},
         defaultColDef={"filter": True},
         dashGridOptions = {'rowSelection': 'single', 'animateRows': False}
     )

@@ -43,6 +43,10 @@ class PikyCallbacks(Utils):
                     self.zobraz_cary[1] = True
                     
 
+                # If hodnoceni is not in the dataframe, add it
+                if "hodnoceni" not in self.piky_data.columns:
+                    self.piky_data["hodnoceni"] = ""
+
                 row_data = self.piky_data.to_dict("records")
                 return [row_data]
             else:
@@ -97,11 +101,12 @@ class PikyCallbacks(Utils):
                     self.fig.add_vline(x=self.time["ekgtime"][pik_index-30].timestamp() * 1000, line_dash="dash", line_color="red", line_width=2, annotation_text="-60 ms") # 60 ms before peak
                     self.fig.add_vline(x=self.time["ekgtime"][pik_index+30].timestamp() * 1000, line_dash="dash", line_color="red", line_width=2, annotation_text="+60 ms") # 60 ms after peak
 
-                    self.fig.add_vline(x=self.time["ekgtime"][pik_index-60].timestamp() * 1000, line_dash="dash", line_color="orange", line_width=2, annotation_text="-120 ms") # 120 ms before peak
-                    self.fig.add_vline(x=self.time["ekgtime"][pik_index-110].timestamp() * 1000, line_dash="dash", line_color="orange", line_width=2, annotation_text="-180 ms") # 180 ms before peak
+                    self.fig.add_vline(x=self.time["ekgtime"][pik_index-90].timestamp() * 1000, line_dash="dash", line_color="orange", line_width=2, annotation_text="-180 ms") # 180 ms before peak
+                    self.fig.add_vline(x=self.time["ekgtime"][pik_index-120].timestamp() * 1000, line_dash="dash", line_color="orange", line_width=2, annotation_text="-240 ms") # 240 ms before peak
 
                     self.fig.add_vline(x=self.time["ekgtime"][pik_index+160].timestamp() * 1000, line_dash="dash", line_color="blue", line_width=2, annotation_text="+320 ms") # 320 ms after peak
                     self.fig.add_vline(x=self.time["ekgtime"][pik_index+225].timestamp() * 1000, line_dash="dash", line_color="blue", line_width=2, annotation_text="+450 ms") # 450 ms after peak
+
                 
                 #['ECG_P_Peaks', 'ECG_P_Onsets', 'ECG_P_Offsets', 'ECG_Q_Peaks', 'ECG_R_Onsets', 'ECG_R_Offsets', 'ECG_S_Peaks', 'ECG_T_Peaks', 'ECG_T_Onsets', 'ECG_T_Offsets']
 
@@ -292,7 +297,7 @@ class PikyCallbacks(Utils):
             if not selected_rows:
                 return no_update, no_update, no_update  # No row selected, return current data unchanged
 
-            print(ctx.triggered_id, selected_rows[0]['Číslo píku'])
+            print(ctx.triggered_id, selected_rows[0]['Číslo piku'])
 
             # Determine which button was clicked
             category = None
@@ -304,11 +309,11 @@ class PikyCallbacks(Utils):
                 category = 'N'
                 
             # Update the category in the selected row
-            row_data[selected_rows[0]['Číslo píku'] - 1]["hodnoceni"] = category
+            row_data[selected_rows[0]['Číslo piku'] - 1]["hodnoceni"] = category
             
             # Find the index of the selected row in the current sorted order
             cislo_piku = selected_rows[0]["Číslo piku"]
-            selected_index = next((i for i, item in enumerate(virtualRowData) if item['Číslo píku'] == cislo_piku), None) # Zjisti index vybraného řádku v tabulce pomocí virtualRowData
+            selected_index = next((i for i, item in enumerate(virtualRowData) if item['Číslo piku'] == cislo_piku), None) # Zjisti index vybraného řádku v tabulce pomocí virtualRowData
 
             # Select the row below the current one
             row_below = virtualRowData[selected_index + 1] if selected_index < len(virtualRowData) - 1 else virtualRowData[selected_index]
@@ -354,7 +359,7 @@ class PikyCallbacks(Utils):
 
             # Connect empty rows with row_data
             for row in empty_rows:
-                row_data[row["Číslo píku"] - 1] = row
+                row_data[row["Číslo piku"] - 1] = row
             return row_data, DashIconify(icon="la:save", width=40, id="piky_save_icon")
         
 

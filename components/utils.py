@@ -5,6 +5,8 @@ from datetime import datetime
 import json
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
+import subprocess
+import platform
 
 
 class Utils():
@@ -114,9 +116,9 @@ class Utils():
         return info_content
     
 
-    def get_dates_from_filenames():
+    def get_dates_from_filenames(files):
         dates = {}
-        folder_path = "holter_vysledky"
+        
         
         month_names = {
             1: "Leden", 2: "Únor", 3: "Březen", 4: "Duben",
@@ -124,7 +126,7 @@ class Utils():
             9: "Září", 10: "Říjen", 11: "Listopad", 12: "Prosinec"
         }
 
-        for filename in sorted(os.listdir(folder_path), reverse=True):
+        for filename in sorted(files, reverse=True):
             # Check if the filename matches the expected format
             if filename.startswith("Holter_"):
                 # Extract the YYMMDD part
@@ -157,10 +159,13 @@ class Utils():
         datum_content = []
         if value == "normal":
             config = Utils.read_config()
+            folder_path = "holter_vysledky"
+
+            files = os.listdir(folder_path)
 
             datum_content = dmc.Select(
                         id={"type": "nastaveni_input", "index":"datum_input"},
-                        data=Utils.get_dates_from_filenames(),
+                        data=Utils.get_dates_from_filenames(files),
                         value=config.get("date"),
                         leftSection=DashIconify(icon="clarity:date-line"),
                         w=300,
@@ -171,12 +176,35 @@ class Utils():
         
             return datum_content
         elif value == "jine":
-            datum_content = dmc.DatePickerInput(
+
+            # Define the target SSID
+            ssid = "Hlt"
+
+            if self.is_connected_to_ap(ssid):
+                print(f"Connected to the network '{ssid}'.")
+                
+                datum_content = dmc.Select(
                         id={"type": "nastaveni_input", "index":"datum_input"},
-                        value=datetime.today(), leftSection=DashIconify(icon="clarity:date-line"), w=300,
-                        valueFormat="DD. M. YYYY",
-                        disabled=disabled
-                    ),
+                        data=Utils.get_dates_from_filenames(files),
+                        value=config.get("date"),
+                        leftSection=DashIconify(icon="clarity:date-line"),
+                        w=300,
+                        withScrollArea=False,
+                        styles={"dropdown": {"maxHeight": 200, "overflowY": "auto"}},
+                        disabled=disabled,
+                        mb=10),
+            else:
+                print(f"Not connected to the network '{ssid}'.")
+
+
+                datum_content = dmc.DatePickerInput(
+                            id={"type": "nastaveni_input", "index":"datum_input"},
+                            value=datetime.today(), leftSection=DashIconify(icon="clarity:date-line"), w=300,
+                            valueFormat="DD. M. YYYY",
+                            disabled=disabled
+                        ),
+            
+
             return datum_content
         
         else:
@@ -186,3 +214,31 @@ class Utils():
         if not os.path.exists(folder_name):
             os.makedirs(folder_name)
     
+    def validate_time(self, time):
+        try:
+            datetime.strptime(time, '%H:%M')
+            return True
+        except ValueError:
+            return False
+        
+    def compare_time(self, time1, time2):
+        return datetime.strptime(time1, '%H:%M') < datetime.strptime(time2, '%H:%M')
+    
+
+    def is_connected_to_ap(self, target_ssid):
+        try:
+            # Use nmcli to get the name of the currently connected Wi-Fi network
+            result = subprocess.run(
+                ["nmcli", "-t", "-f", "active,ssid", "dev", "wifi"],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            # Parse the output
+            active_networks = [
+                line.split(":")[1] for line in result.stdout.splitlines() if line.startswith("yes")
+            ]
+            return target_ssid in active_networks
+        except subprocess.CalledProcessError as e:
+            print(f"Error while checking network: {e}")
+            return False
