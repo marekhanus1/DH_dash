@@ -57,10 +57,10 @@ DashMain()
 
 
 # TODO
-# Zbavit se DatePickeru a nahradit ho selectem, který čte hodnoty z RPi
-# Konečně spravit tu Filtr tabulku
+# Zbavit se DatePickeru a nahradit ho selectem, který čte hodnoty z RPi - done
+# Konečně spravit tu Filtr tabulku - done
 # Pik analyzer:
-    # Upravit hodnoty v tabulce podle SOČ
+    # Upravit hodnoty v tabulce podle SOČ - done
     # Přidat vyhodnocení arytmie, vyhodnocení RR_avg a FlexDER podle epoch 
     # Error s make_subplots (tvoří se až moc grafů, které se nemažou???)
 
