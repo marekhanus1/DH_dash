@@ -35,10 +35,28 @@ def show_piky():
 
     piky_nastaveni_content = html.Div([
         dmc.Card([
-            dmc.Stack(gap=25, children=[
+            dmc.Stack(gap=10, children=[
 
-                dmc.Checkbox("Zobrazit vyhodnocení neurokit2", id="chbox_piky_neurokit2", checked=False, size="lg"),
-                dmc.Checkbox("Zobrazit meze ideálního signálu", id="chbox_piky_meze", checked=True, size="lg"),
+                dmc.Checkbox("Zobrazit vyhodnocení neurokit2",  id={"type": "piky_checkbox", "index": "chbox_piky_neurokit2"}, checked=config.get("chbox_piky_neurokit"), size=20),
+                dmc.Checkbox("Zobrazit meze ideálního signálu", id={"type": "piky_checkbox", "index": "chbox_piky_meze"}, checked=config.get("chbox_piky_meze"), size=20),
+                
+                dmc.Divider(labelPosition="center", label="Nastavení mezních hodnot"),
+                
+                dmc.Group([
+                    dmc.NumberInput(label="Minimální hodnota P",   id={"type": "piky_input", "index": "piky_Pmin"},   value=config.get("piky_Pmin")  , w=170),
+                    dmc.NumberInput(label="Maximální hodnota P",   id={"type": "piky_input", "index": "piky_Pmax"},   value=config.get("piky_Pmax")  , w=170),
+                ], gap=30),
+
+                dmc.Group([
+                    dmc.NumberInput(label="Minimální hodnota PR",  id={"type": "piky_input", "index": "piky_PRmin"},  value=config.get("piky_PRmin") , w=170),
+                    dmc.NumberInput(label="Maximální hodnota PR",  id={"type": "piky_input", "index": "piky_PRmax"},  value=config.get("piky_PRmax") , w=170),
+                ], gap=30),
+
+                dmc.NumberInput(label="Maximální hodnota QRS", id={"type": "piky_input", "index": "piky_QRSmax"}, value=config.get("piky_QRSmax"), w=370),
+                dmc.NumberInput(label="Maximální hodnota QTc", id={"type": "piky_input", "index": "piky_QTcmax"}, value=config.get("piky_QTcmax"), w=370),
+                dmc.NumberInput(label="Maximální hodnota FlexDer", id={"type": "piky_input", "index": "piky_FlexDermax"}, value=config.get("piky_FlexDer"), w=370),
+
+
             ])
         ]),
         dmc.Space(h=10),

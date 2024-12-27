@@ -1,4 +1,4 @@
-from dash import Output, Input, State, no_update, callback_context, ctx
+from dash import Output, Input, State, no_update, callback_context, ctx, ALL
 from dash_iconify import DashIconify
 import dash_mantine_components as dmc
 from components.utils import Utils
@@ -6,7 +6,7 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import pandas as pd
 from components.piky_content import columnDefs
-
+import numpy as np
 
 class PikyCallbacks(Utils):
     def piky_callbacks(self):
@@ -26,31 +26,152 @@ class PikyCallbacks(Utils):
 
 
         @self.app.callback(
-            [Output("piky_gridtable", "rowData")],
+            Output("piky_gridtable", "rowData"), Output("piky_stats", "children"), Output("piky_gridtable", "columnDefs"),
             Input("piky_submitbutton", "n_clicks"),
             #[State(i, "value") for i in ["piky_RRmin", "piky_RRmax", "piky_SDNN", "piky_RMSSD", "piky_FlexDeriv"]],
-            State("chbox_piky_neurokit2", "checked"), State("chbox_piky_meze", "checked"),
+            State({"type": "piky_checkbox", "index": ALL}, "checked"),
+            State({"type": "piky_input", "index": ALL}, "value"),
             prevent_initial_call=True
 
         )
         def piky_set_limits(*inputs):
             if inputs[0]:
-                
                 self.zobraz_cary = [False, False]
-                if inputs[1] == True:
+                if inputs[1][0] == True:
                     self.zobraz_cary[0] = True
-                if inputs[2] == True:
+                if inputs[1][1] == True:
                     self.zobraz_cary[1] = True
-                    
+
+
+                config = Utils.read_config()
+                print(inputs)
+                config_names = ["chbox_piky_neurokit", "chbox_piky_meze", "piky_Pmin", "piky_Pmax", "piky_PRmin", "piky_PRmax", "piky_QRSmax", "piky_QTcmax", "piky_FlexDer"]
+
+                index_num = 0
+                for i in inputs[1:]:
+                    for j in i:
+                        config[config_names[index_num]] = j
+                        index_num += 1
+
+                self.write_config(config)
+
+                limits = {
+                    'peaks_P': {"operator": "<>", "threshold": [inputs[2][0], inputs[2][1]], "override_false": False},
+                    'peaks_PR': {"operator": "<>", "threshold":[inputs[2][2], inputs[2][3]], "override_false": False},
+                    'peaks_PR': {"operator": ">", "threshold":       inputs[2][3], "override_false": False},
+                    'peaks_QRS': {"operator": ">", "threshold":      inputs[2][4], "override_false": False},
+                    'peaks_QTc': {"operator": ">", "threshold":      inputs[2][5], "override_false": False},
+                    'peaks_FlexDer': {"operator": ">", "threshold": inputs[2][6], "override_false": True}
+                }
+                stats =  {
+                    'peaks_P': 0,
+                    #'peaks_P_max': 0,
+                    'peaks_PR': 0,
+                    #'peaks_PR_max': 0,
+                    'peaks_QRS':   0,
+                    'peaks_QTc':  0,
+                    'peaks_FlexDer':0,
+                    'arytmie': 0
+                }
+
+                def check_arytmie(row):
+                    arytmie = False
+                    for col, rule in limits.items():
+                        if col in row:
+                            value = row[col]
+                            operator = rule["operator"]
+                            threshold = rule["threshold"]
+                            override_false = rule["override_false"]
+                            
+                            # Evaluate based on operator
+                            if operator == "<>":
+                                limit_exceeded = (value < threshold[0]) or (value > threshold[1])
+                            elif operator == ">":
+                                limit_exceeded = (value > threshold)
+                            else:
+                                limit_exceeded = (value < threshold)
+
+                            if np.isnan(value):
+                                print(value)
+                                limit_exceeded = True
+                            
+                            if limit_exceeded:
+                                stats[col] += 1
+                                if override_false:
+                                    arytmie = False
+                                else:
+                                    arytmie = True
+
+                    if arytmie == True:
+                        stats["arytmie"] += 1
+
+                    return arytmie
+
+                # Calculate "Arytmie" column
+                self.piky_data['arytmie'] = self.piky_data.apply(check_arytmie, axis=1)
 
                 # If hodnoceni is not in the dataframe, add it
                 if "hodnoceni" not in self.piky_data.columns:
                     self.piky_data["hodnoceni"] = ""
 
+                pocet_piku = len(self.piky_data["arytmie"])
+                
+                print(stats)
+
+                stats_content = [
+                            dmc.Stack(
+                                children=[
+                                    dmc.Text("Nadlimitní píky:"), 
+
+                                    dmc.Group([dmc.Space(w=20),
+                                               dmc.Text(f'Arytmie: {stats["arytmie"]}/{pocet_piku} [{(round(stats["arytmie"]/pocet_piku*100))} %]')]),
+
+                                    dmc.Group([dmc.Space(w=20),
+                                               dmc.Text(f'P: {stats["peaks_P"]}/{pocet_piku} [{(round(stats["peaks_P"]/pocet_piku*100))} %]')]),
+                                    
+                                    dmc.Group([dmc.Space(w=20),
+                                               dmc.Text(f'PR: {stats["peaks_PR"]}/{pocet_piku} [{(round(stats["peaks_PR"]/pocet_piku*100))} %]')]),
+
+                                    dmc.Group([dmc.Space(w=20),
+                                               dmc.Text(f'QRS: {stats["peaks_QRS"]}/{pocet_piku} [{(round(stats["peaks_QRS"]/pocet_piku*100))} %]')]),
+
+                                    dmc.Group([dmc.Space(w=20),
+                                               dmc.Text(f'QTc: {stats["peaks_QTc"]}/{pocet_piku} [{(round(stats["peaks_QTc"]/pocet_piku*100))} %]')]),
+                                    
+                                    dmc.Group([dmc.Space(w=20),
+                                               dmc.Text(f'FlexDer: {stats["peaks_FlexDer"]}/{pocet_piku} [{(round(stats["peaks_FlexDer"]/pocet_piku*100))} %]')]),       
+                                ]
+                            )
+                        ]
+
+
+                columnDefs[2]["cellStyle"] = {"styleConditions": [
+                                                {"condition": f"params.value < {int(inputs[2][0])}", "style": {"border": "1px solid red", }}, 
+                                                {"condition": f"params.value > {int(inputs[2][1])}", "style": {"border": "1px solid red", }}
+                                            ]}
+                columnDefs[3]["cellStyle"] = {"styleConditions": [
+                                                {"condition": f"params.value < {int(inputs[2][2])}", "style": {"border": "1px solid red", }}, 
+                                                {"condition": f"params.value > {int(inputs[2][3])}", "style": {"border": "1px solid red", }}
+                                            ]}
+            
+                columnDefs[4]["cellStyle"] = {"styleConditions": [
+                                                {"condition": f"params.value > {int(inputs[2][4])}", "style": {"border": "1px solid red", }}
+                                            ]}
+                columnDefs[5]["cellStyle"] = {"styleConditions": [
+                                                {"condition": f"params.value > {int(inputs[2][5])}", "style": {"border": "1px solid red", }}
+                                            ]}
+                columnDefs[6]["cellStyle"] = {"styleConditions": [
+                                                {"condition": f"params.value > {int(inputs[2][6])}", "style": {"border": "1px solid green", }}
+                                            ]}
+                
+                columnDefs[7]["cellStyle"] = {"styleConditions": [{"condition": "params.value === true", "style": {"border": "1px solid red"}}]}
+
+
+
                 row_data = self.piky_data.to_dict("records")
-                return [row_data]
+                return row_data, stats_content, columnDefs
             else:
-                return no_update
+                return no_update, no_update, no_update
 
 
 
@@ -72,7 +193,7 @@ class PikyCallbacks(Utils):
                     self.fig.replace(make_subplots(specs=[[{"secondary_y": True}]]))
 
                 cislo_piky = selection[0]["Číslo piku"]-1
-                delka_piky_s = round((self.time["peaks_time"][1]-self.time["peaks_time"][0]).total_seconds(),2)
+                delka_piky_s = 2
 
 
                 print(cislo_piky)
@@ -83,7 +204,11 @@ class PikyCallbacks(Utils):
                         break
                 pik_index = i
                 start = int(i-250*delka_piky_s)
+                if start < 0:
+                    start = 0
                 end = int(i+250*delka_piky_s)
+                if end > len(self.data["ekg"]):
+                    end = len(self.data["ekg"])
                 
 
 
@@ -110,7 +235,7 @@ class PikyCallbacks(Utils):
                 
                 #['ECG_P_Peaks', 'ECG_P_Onsets', 'ECG_P_Offsets', 'ECG_Q_Peaks', 'ECG_R_Onsets', 'ECG_R_Offsets', 'ECG_S_Peaks', 'ECG_T_Peaks', 'ECG_T_Onsets', 'ECG_T_Offsets']
 
-                if cislo_piky != 0 and self.zobraz_cary[0] == True:
+                if self.zobraz_cary[0] == True:
                     for i in self.Piky_points_names:
                         if self.data[i][cislo_piky] != 0:
                             self.fig.add_vline(x=self.data[i][cislo_piky] * 1000, line_dash="dash", line_color="pink", line_width=2, annotation_text=i.replace("ECG_", ""))

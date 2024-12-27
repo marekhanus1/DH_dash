@@ -41,6 +41,10 @@ class AnalysePeaks:
                     ecg_peak_values[i] = np.insert(ecg_peak_values[i], cislo_piku, 0)
                     print(f"MOVED T {i} - {cislo_piku}")
 
+                elif ecg_peak_values[i][cislo_piku] < peaks_in_ms[cislo_piku]:
+                    ecg_peak_values[i] = np.delete(ecg_peak_values[i], cislo_piku)
+                    print(f"DELETED T {i} - {cislo_piku}")
+
         
         
 
