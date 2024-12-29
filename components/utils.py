@@ -182,7 +182,7 @@ class Utils():
                                 mb=10
                         ),
                     
-                    dmc.Button("Zobrazit logfile", id="logfile_button", n_clicks=0, color="blue"),
+                    dmc.Button("Zobrazit logfile", id="logfile_button", n_clicks=0, color="blue", disabled=disabled),
 
                 ]
             )

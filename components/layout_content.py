@@ -89,7 +89,9 @@ class layout_content():
                                         [
                                             dmc.AccordionControl("Info", icon=DashIconify(icon="clarity:info-solid")),
                                             dmc.AccordionPanel([
-                                                dmc.Card([html.Div([], id="fileinfo_div")], shadow="sm",radius="md",withBorder=True)
+                                                dmc.Card([html.Div([], id="fileinfo_div")], shadow="sm",radius="md",withBorder=True),
+                                                dmc.Space(h="10"),
+                                                dmc.Button("Zobrazit logfile", id="logfile_button2", n_clicks=0, color="blue"),
                                             ]),
                                         ],
                                         value="info",
@@ -171,6 +173,8 @@ class layout_content():
                                                         dmc.Group(["Úseky měření: ", dmc.Loader(color="red", size="md", type="dots")]),
                                                 ], id="fileinfo_div")
                                                 ], shadow="sm",radius="md",withBorder=True),
+                                                dmc.Space(h="10"),
+                                                dmc.Button("Zobrazit logfile", id="logfile_button2", n_clicks=0, color="blue"),
                                             ]),
                                         ],
                                         value="info",

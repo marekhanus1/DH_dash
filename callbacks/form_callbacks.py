@@ -70,13 +70,25 @@ class FormCallbacks(Utils):
 
 
         @self.app.callback(
-            Output('logfile_drawer', 'opened'), Output('logfile_drawer', 'children'),
+            Output('logfile_drawer', 'opened', allow_duplicate=True), Output('logfile_drawer', 'children', allow_duplicate=True),
             Input('logfile_button', 'n_clicks'),
             State({"type": "nastaveni_input", "index":"datum_input"}, 'value'),
             prevent_initial_call=True
         )
         def show_log(n_clicks, date):
             if n_clicks > 0:
+                return True, self.read_log(date)
+            return False, no_update
+        
+
+        @self.app.callback(
+            Output('logfile_drawer', 'opened'), Output('logfile_drawer', 'children'),
+            Input('logfile_button2', 'n_clicks'),
+            prevent_initial_call=True
+        )
+        def show_log(n_clicks):
+            if n_clicks > 0:
+                date = self.args["date"]
                 return True, self.read_log(date)
             return False, no_update
 
