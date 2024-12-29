@@ -15,7 +15,6 @@ class FormCallbacks(Utils):
         @self.app.callback(
             Output({"type": "nastaveni_inputSW", "index": 'pik_time-start'}, "error"), 
             Output({"type": "nastaveni_inputSW", "index": 'pik_time-end'}, "error"),
-            Output("submit-button", "disabled"),
 
             Input({"type": "nastaveni_inputSW", "index": 'pik_time-start'}, "value"), 
             Input({"type": "nastaveni_inputSW", "index": 'pik_time-end'}, "value")
@@ -43,7 +42,7 @@ class FormCallbacks(Utils):
             if error_status[0] != False or error_status[1] != False:
                 disable_submit = True
 
-            return error_status[0], error_status[1], disable_submit
+            return error_status[0], error_status[1]
 
         @self.app.callback(
             [Output('time_range_div', 'hidden')]+
@@ -62,14 +61,24 @@ class FormCallbacks(Utils):
             date_content = self.choose_date_input(value, self.disable_components)
 
             if date_content == None:
-                return no_update
+                return no_update, no_update
             else:
                 if value == "normal":
                     return date_content, False
                 else:
                     return date_content, True
 
-    
+
+        @self.app.callback(
+            Output('logfile_drawer', 'opened'), Output('logfile_drawer', 'children'),
+            Input('logfile_button', 'n_clicks'),
+            State({"type": "nastaveni_input", "index":"datum_input"}, 'value'),
+            prevent_initial_call=True
+        )
+        def show_log(n_clicks, date):
+            if n_clicks > 0:
+                return True, self.read_log(date)
+            return False, no_update
 
         @self.app.callback(
             Output('output-time-range', 'children'),
@@ -100,9 +109,9 @@ class FormCallbacks(Utils):
         def disable_posledni_mereni(*inputs):
             config = Utils.read_config()
             config_names = ["rangeSW",  "butter_SW", "vrub_SW", "flexbutter_sw", "epoch_switch" , "pik_switch",
-                                    "date", "pik_limit", "flex_prom", 
+                                     "pik_limit", "flex_prom", "date",
                                     "ssh", "exportEKG", 
-                                    "rangeMax", "rangeMin", "butter_val", "vrub_val",  "flexbutter_val", "epoch_delka",  "pik_rangeStart", "pik_rangeEnd"]
+                                    "rangeMax", "rangeMin", "butter_val", "vrub_val",  "flexbutter_val", "epoch_delka",  "pik_rangeStart", "pik_rangeEnd", "pik_prominenceP"]
             index = 0
             for i in inputs:
                 for j in i:
@@ -123,7 +132,7 @@ class FormCallbacks(Utils):
 
         @self.app.callback(
             Output('main-div', 'children', allow_duplicate=True),
-            [Input('submit-button', 'n_clicks'),Input('posledni_vyhodnoceni_button', 'n_clicks')],
+            [Input('submit-button', 'n_clicks'), Input('posledni_vyhodnoceni_button', 'n_clicks')],
             
             State({"type": "nastaveni_switch", "index": ALL}, "checked"),
             State({"type": "nastaveni_input", "index": ALL}, "value"),
@@ -140,16 +149,16 @@ class FormCallbacks(Utils):
                 # (n_clicks, n_clicks2 , [rangeSW, butterSW, vrubSW, flexbutterSW, epochySW, pikySW], [date, limit, flex_prom], [ssh, export], [range_val, butter_val, vrub_val, flexbutter_val, epoch_delka, pik_rangeStart, pik_rangeStop])
                 
                 inputs = inputs[2:]
-                
+                print(inputs)
                 
                 if callback_context.triggered[0]["prop_id"] == "submit-button.n_clicks":
-                    if len(inputs[1][0]) > 6:
-                        inputs[1][0] = inputs[1][0][2:].replace("-", "") # Nastav formát datumu
+                    if len(inputs[1][2]) > 6:
+                        inputs[1][2] = inputs[1][2][2:].replace("-", "") # Nastav formát datumu
 
                     config_names = ["rangeSW",  "butter_SW", "vrub_SW", "flexbutter_sw", "epoch_switch" , "pik_switch",
-                                    "date", "pik_limit", "flex_prom", 
+                                     "pik_limit", "flex_prom", "date",
                                     "ssh", "exportEKG", 
-                                    "rangeMax", "rangeMin", "butter_val", "vrub_val",  "flexbutter_val", "epoch_delka",  "pik_rangeStart", "pik_rangeEnd"]
+                                    "rangeMax", "rangeMin", "butter_val", "vrub_val",  "flexbutter_val", "epoch_delka",  "pik_rangeStart", "pik_rangeEnd", "pik_prominenceP"]
                     
                     config = Utils.read_config()
                     
@@ -176,23 +185,28 @@ class FormCallbacks(Utils):
                         inputs[3][index] = f"{start_time}-{end_time}"
 
                 print(inputs)
-                inputs[3][-2] = f"{inputs[3][-2]}-{inputs[3][-1]}"
+                inputs[3][-3] = f"{inputs[3][-3]}-{inputs[3][-2]}"
                 
                 inputs = list(inputs)
-                inputs[-1] = inputs[-1][:-1]
+                inputs[-1].remove(inputs[-1][-2])
 
                 print(inputs)
                 for index, i in enumerate(inputs[0]):
                     if i != True:
                         inputs[3][index] = None
 
+                if i != True:
+                    inputs[3][-1] = None
+
+
+
                 print(inputs[1:])
                 inputs = inputs[1:]
 
                 # Vytvoř spouštěcí argumenty pro vyhodnocovací program
-                arg_names = ["date", "limit", "flexprom",
+                arg_names = [ "limit", "flexprom","date",
                              "ssh", "export",
-                             "range", "butterworth", "vrubovy", "flexbutter", "epocha", "pik_range"]
+                             "range", "butterworth", "vrubovy", "flexbutter", "epocha", "pik_range", "pik_prominenceP"]
                 
                 self.create_args(arg_names) # Nastav hodnoty všech argumentů na None
 

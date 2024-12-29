@@ -4,8 +4,8 @@
     "rangeSW": false,
     "rangeMax": 1020,
     "rangeMin": 480,
-    "pik_limit": 1000,
-    "butter_SW": true,
+    "pik_limit": 3000,
+    "butter_SW": false,
     "butter_val": 4,
     "vrub_SW": true,
     "vrub_val": 2,
@@ -22,8 +22,9 @@
     "RMSSD": 500,
     "FlexDeriv": 30,
     "FlexDer": 29,
-    "pik_rangeStart": "15:00",
+    "pik_rangeStart": "23:50",
     "pik_rangeEnd": "23:59",
+    "pik_prominenceP": 100,
     "chbox_piky_neurokit": true,
     "chbox_piky_meze": true,
     "piky_Pmin": 70,
@@ -32,5 +33,6 @@
     "piky_PRmax": 220,
     "piky_QRSmax": 250,
     "piky_QTcmax": 450,
-    "piky_FlexDer": 30
+    "piky_FlexDer": 30,
+    "piky_delkaZobrazeni": 1
 }

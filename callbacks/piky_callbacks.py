@@ -31,6 +31,7 @@ class PikyCallbacks(Utils):
             #[State(i, "value") for i in ["piky_RRmin", "piky_RRmax", "piky_SDNN", "piky_RMSSD", "piky_FlexDeriv"]],
             State({"type": "piky_checkbox", "index": ALL}, "checked"),
             State({"type": "piky_input", "index": ALL}, "value"),
+            State({"type": "piky_input2", "index": ALL}, "value"),
             prevent_initial_call=True
 
         )
@@ -42,16 +43,18 @@ class PikyCallbacks(Utils):
                 if inputs[1][1] == True:
                     self.zobraz_cary[1] = True
 
+                self.delka_piky_s = inputs[3][0]
 
                 config = Utils.read_config()
                 print(inputs)
-                config_names = ["chbox_piky_neurokit", "chbox_piky_meze", "piky_Pmin", "piky_Pmax", "piky_PRmin", "piky_PRmax", "piky_QRSmax", "piky_QTcmax", "piky_FlexDer"]
+                config_names = ["chbox_piky_neurokit", "chbox_piky_meze", "piky_Pmin", "piky_Pmax", "piky_PRmin", "piky_PRmax", "piky_QRSmax", "piky_QTcmax", "piky_FlexDer", "piky_delkaZobrazeni"]
 
                 index_num = 0
                 for i in inputs[1:]:
                     for j in i:
                         config[config_names[index_num]] = j
                         index_num += 1
+                
 
                 self.write_config(config)
 
@@ -92,7 +95,6 @@ class PikyCallbacks(Utils):
                                 limit_exceeded = (value < threshold)
 
                             if np.isnan(value):
-                                print(value)
                                 limit_exceeded = True
                             
                             if limit_exceeded:
@@ -144,27 +146,34 @@ class PikyCallbacks(Utils):
                             )
                         ]
 
-
                 columnDefs[2]["cellStyle"] = {"styleConditions": [
+                                                {"condition": f"params.value > 1", "style": {"border": "2px solid red", }}
+                                            ]}
+                
+                columnDefs[3]["cellStyle"] = {"styleConditions": [
                                                 {"condition": f"params.value < {int(inputs[2][0])}", "style": {"border": "1px solid red", }}, 
                                                 {"condition": f"params.value > {int(inputs[2][1])}", "style": {"border": "1px solid red", }}
                                             ]}
-                columnDefs[3]["cellStyle"] = {"styleConditions": [
+                columnDefs[4]["cellStyle"] = {"styleConditions": [
                                                 {"condition": f"params.value < {int(inputs[2][2])}", "style": {"border": "1px solid red", }}, 
                                                 {"condition": f"params.value > {int(inputs[2][3])}", "style": {"border": "1px solid red", }}
                                             ]}
             
-                columnDefs[4]["cellStyle"] = {"styleConditions": [
-                                                {"condition": f"params.value > {int(inputs[2][4])}", "style": {"border": "1px solid red", }}
-                                            ]}
                 columnDefs[5]["cellStyle"] = {"styleConditions": [
-                                                {"condition": f"params.value > {int(inputs[2][5])}", "style": {"border": "1px solid red", }}
+                                                {"condition": f"params.value > {int(inputs[2][4])}", "style": {"border": "1px solid red", }},
+                                                {"condition": f"params.value === {int(inputs[2][4])}", "style": {"border": "1px solid red", }}
+
                                             ]}
                 columnDefs[6]["cellStyle"] = {"styleConditions": [
-                                                {"condition": f"params.value > {int(inputs[2][6])}", "style": {"border": "1px solid green", }}
+                                                {"condition": f"params.value > {int(inputs[2][5])}", "style": {"border": "1px solid red", }},
+                                                {"condition": f"params.value === {int(inputs[2][5])}", "style": {"border": "1px solid red", }}
+                                                ]}
+                columnDefs[7]["cellStyle"] = {"styleConditions": [
+                                                {"condition": f"params.value > {int(inputs[2][6])}", "style": {"border": "1px solid green", }},
+                                                {"condition": f"params.value === {int(inputs[2][6])}", "style": {"border": "1px solid red", }}
                                             ]}
                 
-                columnDefs[7]["cellStyle"] = {"styleConditions": [{"condition": "params.value === true", "style": {"border": "1px solid red"}}]}
+                columnDefs[8]["cellStyle"] = {"styleConditions": [{"condition": "params.value === true", "style": {"border": "1px solid red"}}]}
 
 
 
@@ -193,7 +202,7 @@ class PikyCallbacks(Utils):
                     self.fig.replace(make_subplots(specs=[[{"secondary_y": True}]]))
 
                 cislo_piky = selection[0]["Číslo piku"]-1
-                delka_piky_s = 2
+                delka_piky_s = self.delka_piky_s
 
 
                 print(cislo_piky)
@@ -213,8 +222,9 @@ class PikyCallbacks(Utils):
 
 
                 ekg_pik = list(self.data["ekg"][start:end])
+                
                 ekg_pik_cz = list(self.time["ekgtime"][start:end])
-            
+                print(len(ekg_pik))
 
                 self.fig.add_trace(go.Scattergl(name=f"EKG Pík {cislo_piky}"), hf_x=ekg_pik_cz, hf_y=ekg_pik)
                 
@@ -227,7 +237,7 @@ class PikyCallbacks(Utils):
                     self.fig.add_vline(x=self.time["ekgtime"][pik_index+30].timestamp() * 1000, line_dash="dash", line_color="red", line_width=2, annotation_text="+60 ms") # 60 ms after peak
 
                     self.fig.add_vline(x=self.time["ekgtime"][pik_index-90].timestamp() * 1000, line_dash="dash", line_color="orange", line_width=2, annotation_text="-180 ms") # 180 ms before peak
-                    self.fig.add_vline(x=self.time["ekgtime"][pik_index-120].timestamp() * 1000, line_dash="dash", line_color="orange", line_width=2, annotation_text="-240 ms") # 240 ms before peak
+                    self.fig.add_vline(x=self.time["ekgtime"][pik_index-140].timestamp() * 1000, line_dash="dash", line_color="orange", line_width=2, annotation_text="-280 ms") # 280 ms before peak
 
                     self.fig.add_vline(x=self.time["ekgtime"][pik_index+160].timestamp() * 1000, line_dash="dash", line_color="blue", line_width=2, annotation_text="+320 ms") # 320 ms after peak
                     self.fig.add_vline(x=self.time["ekgtime"][pik_index+225].timestamp() * 1000, line_dash="dash", line_color="blue", line_width=2, annotation_text="+450 ms") # 450 ms after peak
@@ -239,6 +249,9 @@ class PikyCallbacks(Utils):
                     for i in self.Piky_points_names:
                         if self.data[i][cislo_piky] != 0:
                             self.fig.add_vline(x=self.data[i][cislo_piky] * 1000, line_dash="dash", line_color="pink", line_width=2, annotation_text=i.replace("ECG_", ""))
+
+                for i in self.data["peaks_P_prominence"][cislo_piky]:
+                    self.fig.add_vline(x=i * 1000, line_dash="dot", line_color="yellow", line_width=2, annotation_text="P pík")
                     
 
                 self.fig.update_layout(template="plotly_dark", margin=dict(l=125, r=0, t=0, b=50),

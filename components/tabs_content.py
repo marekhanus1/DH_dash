@@ -46,7 +46,7 @@ def show_tabs(disabled=False):
                         ),
                     ], id="datum_div"
                 ),
-
+                
                 dmc.Space(h="20"),
 
                 dmc.Checkbox(
@@ -227,6 +227,9 @@ def show_tabs(disabled=False):
                             disabled=disabled
                         ),
                     ]),
+
+                    dmc.Space(h=20),
+                    dmc.NumberInput(id={"type": "nastaveni_inputSW", "index":"arg_piklimit"}, label="Prominence P píků", step=10, value=config.get('pik_prominenceP'), w=385, disabled=disabled),
                 ], id="pik_time_range_div", hidden=True),
                     
             ],withBorder=True,
@@ -245,13 +248,22 @@ def show_tabs(disabled=False):
                 dmc.TabsTab("Soubory", value="1"),
                 dmc.TabsTab("Filtry a limity", value="2"),
                 dmc.TabsTab("Zobrazení a export", value="3"),
-                dmc.TabsTab("Epoch Analyzer", value="4"),
+                dmc.TabsTab("Epochy a píky", value="4"),
             ]),
             tab1_content,
             tab2_content,
             tab3_content,
-            tab4_content
-        ], value="1", color="blue", variant="pills"
+            tab4_content,
+
+            dmc.Drawer(
+            title="Log soubor",
+            id="logfile_drawer",
+            padding="md",
+            size="50%",
+            #position="right",
+            ),
+
+        ], value="1", color="blue", variant="pills",
     )
 
     return tabs

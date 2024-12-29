@@ -56,10 +56,29 @@ class AnalysePeaks:
         QTc_distance = []
         flex_der = []
         RR_avg = []
+        P_peaks = []
 
         index_epochy = 1
 
+        vzorky_za_ms = int(self.vzorkovaci_frekvence/1000)
+
         for i in range(len(peaks)-1):
+            
+            if peaks[i] - 300*vzorky_za_ms < 0:
+                zacatek_hledani = 0
+            else:
+                zacatek_hledani =peaks[i]-250 # 300 ms před R píkem
+
+
+
+            print(peaks[i]-150,zacatek_hledani, peaks[i]-30)
+            print(len(ekg_pik_values[zacatek_hledani:(peaks[i]-30)]))
+            find_P_peaks,_ = signal.find_peaks(ekg_pik_values[zacatek_hledani:peaks[i]-30], prominence=int(self.args["pik_prominenceP"])) # 
+
+            P_peaks_in_ms = [ekg_pik_casova_znacka[zacatek_hledani:peaks[i]-30][j] for j in find_P_peaks] # Časová značka P píků v sekundách 
+            P_peaks.append(P_peaks_in_ms)
+
+
             while self.epoch_stats["time"][index_epochy] <= peaks_in_ms[i]: # Najdi epochu, ve které se nachází R pík pro určení RR_avg a FlexDer
                 index_epochy += 1
                 if index_epochy == len(self.epoch_stats["time"]): # Zajisti, aby nedošlo k přetečení
@@ -116,7 +135,14 @@ class AnalysePeaks:
 
 
         self.ecg_peak_values = ecg_peak_values
-        
+
+
+        max_length = max(len(sublist) for sublist in P_peaks)
+        padded_data = [sublist + [0] * (max_length - len(sublist)) for sublist in P_peaks]
+
+        self.P_peaks = np.array(padded_data).astype(np.float64)
+        print(P_peaks)
+
 
         self.peaks_stats = {
             "time":np.array(peaks_in_ms[:-1]).astype(np.float64),
@@ -124,8 +150,7 @@ class AnalysePeaks:
             "PR": np.array(PR_distance).astype(np.float64),
             "QRS": np.array(QRS_distance).astype(np.float64),
             "QTc": np.array(QTc_distance).astype(np.float64),
-            "FlexDer": np.array(flex_der).astype(np.float64)
-
+            "FlexDer": np.array(flex_der).astype(np.float64),
         }
 
         #print(self.peaks_stats)

@@ -111,7 +111,8 @@ class VyhodnoceniCallbacks(Utils):
                     
 
                     if self.args["pik_range"] != None:
-                        data_names = np.array(data_names.tolist() + [self.Piky_names.tolist()]+ [self.Piky_points_names.tolist()], dtype=object)
+                        Piky_points_names = np.append(self.Piky_points_names, "peaks_P_prominence")
+                        data_names = np.array(data_names.tolist() + [self.Piky_names.tolist()]+ [Piky_points_names.tolist()], dtype=object)
                         time_names = np.array(time_names + ["peaks_time"], dtype=object)
 
                     
@@ -128,6 +129,13 @@ class VyhodnoceniCallbacks(Utils):
                         self.piky_data = pd.DataFrame({k: self.data[k] for k in self.Piky_names})
                         print(self.piky_data)
                         cas_piky = [i.strftime("%H:%M:%S")+ f".{i.microsecond // 100000}" for i in self.time["peaks_time"]]
+
+                        self.data["peaks_P_prominence"] = [[item for item in sublist if item != 0] for sublist in self.data["peaks_P_prominence"]]
+
+
+                        pocet_P_piku = [len(i) for i in self.data["peaks_P_prominence"]]
+                        self.piky_data.insert(0, "peaks_P_prominence", pocet_P_piku)
+
                         self.piky_data.insert(0, "Čas piku", cas_piky)
                         self.piky_data.insert(0, "Číslo piku", range(1, len(self.piky_data) + 1))
 

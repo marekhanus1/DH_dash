@@ -8,6 +8,7 @@ from components.utils import Utils
 columnDefs = [
     {"headerName": "Číslo piku", 'field': 'Číslo piku'},
     {"headerName": "Čas piku", 'field': 'Čas piku' },
+    {"headerName": "P píky", 'field': 'peaks_P_prominence'},
     {"headerName": "P", 'field': 'peaks_P'},
     {"headerName": "PR", 'field': 'peaks_PR'},
     {"headerName": "QRS", 'field': 'peaks_QRS'},
@@ -40,6 +41,8 @@ def show_piky():
                 dmc.Checkbox("Zobrazit vyhodnocení neurokit2",  id={"type": "piky_checkbox", "index": "chbox_piky_neurokit2"}, checked=config.get("chbox_piky_neurokit"), size=20),
                 dmc.Checkbox("Zobrazit meze ideálního signálu", id={"type": "piky_checkbox", "index": "chbox_piky_meze"}, checked=config.get("chbox_piky_meze"), size=20),
                 
+                dmc.NumberInput(label="Délka zobrazení píků [s]", id={"type": "piky_input2", "index": "piky_delkaZobrazeni"}, value=config.get("piky_delkaZobrazeni"), w=370),
+
                 dmc.Divider(labelPosition="center", label="Nastavení mezních hodnot"),
                 
                 dmc.Group([

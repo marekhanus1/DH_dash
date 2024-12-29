@@ -184,11 +184,12 @@ class layout_content():
 
                             dmc.ProgressRoot(
                                 [
-                                    dmc.ProgressSection(dmc.ProgressLabel("EKG"), value=40, color="red"),
-                                    dmc.ProgressSection(dmc.ProgressLabel("FLEX"), value=15, color="orange"),
-                                    dmc.ProgressSection(dmc.ProgressLabel("EPOCHY"), value=15, color="pink"),
-                                    dmc.ProgressSection(dmc.ProgressLabel("HR A RESP"), value=15, color="cyan"),
-                                    dmc.ProgressSection(dmc.ProgressLabel("DOKONČENO"), value=15, color="green"),
+                                    dmc.ProgressSection(dmc.ProgressLabel("EKG"), value=30, color="red"),
+                                    dmc.ProgressSection(dmc.ProgressLabel("FLEX"), value=10, color="orange"),
+                                    dmc.ProgressSection(dmc.ProgressLabel("EPOCHY"), value=10, color="pink"),
+                                    dmc.ProgressSection(dmc.ProgressLabel("HR A RESP"), value=10, color="cyan"),
+                                    dmc.ProgressSection(dmc.ProgressLabel("Pík analyzér"), value=30, color="blue"),
+                                    dmc.ProgressSection(dmc.ProgressLabel("DOKONČENO"), value=10, color="green"),
                                 ],
                                 size=20,
                                 

@@ -7,6 +7,7 @@ import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 import subprocess
 import paramiko
+import platform
 
 class Utils():
     def minutes_to_time(self,minutes):
@@ -73,16 +74,19 @@ class Utils():
     def handle_progressbar(self):
         progressbar_content = []
         if self.shared_data["stage"] >= 2:
-            progressbar_content += [dmc.ProgressSection(dmc.ProgressLabel("EKG"), value=40, color="red"),]
+            progressbar_content += [dmc.ProgressSection(dmc.ProgressLabel("EKG"), value=30, color="red"),]
         
         if self.shared_data["stage"] >= 3:
-            progressbar_content += [dmc.ProgressSection(dmc.ProgressLabel("FLEX"), value=15, color="orange"),]
+            progressbar_content += [dmc.ProgressSection(dmc.ProgressLabel("FLEX"), value=10, color="orange"),]
         
         if self.shared_data["stage"] >= 4:
-            progressbar_content += [dmc.ProgressSection(dmc.ProgressLabel("EPOCHY"), value=15, color="pink"),]
+            progressbar_content += [dmc.ProgressSection(dmc.ProgressLabel("EPOCHY"), value=10, color="pink"),]
         
         if self.shared_data["stage"] >= 5:
-            progressbar_content += [dmc.ProgressSection(dmc.ProgressLabel("HR A RESP"), value=15, color="cyan"),]
+            progressbar_content += [dmc.ProgressSection(dmc.ProgressLabel("HR A RESP"), value=10, color="cyan"),]
+
+        if self.shared_data["stage"] >= 6:
+            progressbar_content += [dmc.ProgressSection(dmc.ProgressLabel("PÍKY"), value=30, color="blue"),]
         return progressbar_content
     
     def handle_info(self):
@@ -164,28 +168,36 @@ class Utils():
             config = Utils.read_config()
             
 
-            datum_content = dmc.Select(
-                        id={"type": "nastaveni_input", "index":"datum_input"},
-                        data=Utils.get_dates_from_filenames("local"),
-                        value=config.get("date"),
-                        leftSection=DashIconify(icon="clarity:date-line"),
-                        w=300,
-                        withScrollArea=False,
-                        styles={"dropdown": {"maxHeight": 200, "overflowY": "auto"}},
-                        disabled=disabled,
-                        mb=10),
+            datum_content = dmc.Group(
+                [
+                    dmc.Select(
+                                id={"type": "nastaveni_input", "index":"datum_input"},
+                                data=Utils.get_dates_from_filenames("local"),
+                                value=config.get("date"),
+                                leftSection=DashIconify(icon="clarity:date-line"),
+                                w=300,
+                                withScrollArea=False,
+                                styles={"dropdown": {"maxHeight": 200, "overflowY": "auto"}},
+                                disabled=disabled,
+                                mb=10
+                        ),
+                    
+                    dmc.Button("Zobrazit logfile", id="logfile_button", n_clicks=0, color="blue"),
+
+                ]
+            )
+                        
         
             return datum_content
         elif value == "jine":
 
-            # Define the target SSID
-            ssid = "Hlt"
+            host = "192.168.4.1"  # Raspberry Pi's IP address
 
-            if self.is_connected_to_ap(ssid):
-                print(f"Connected to the network '{ssid}'.")
+            if self.can_ping(host, timeout=0.5):
                 
+                print(f"Connected to RPi")
                 # Configuration
-                host = "192.168.4.1"  # Raspberry Pi's IP address
+                
                 username = "pi"       # Pi's username
                 password = "raspberry"  # Pi's password
                 remote_path = "/home/pi/Holter_bluetooth/holter_vysledky"
@@ -204,15 +216,10 @@ class Utils():
                         disabled=disabled,
                         mb=10),
             else:
-                print(f"Not connected to the network '{ssid}'.")
+                print(f"Cannot connect to RPi")
 
 
-                datum_content = dmc.DatePickerInput(
-                            id={"type": "nastaveni_input", "index":"datum_input"},
-                            value=datetime.today(), leftSection=DashIconify(icon="clarity:date-line"), w=300,
-                            valueFormat="DD. M. YYYY",
-                            disabled=disabled
-                        ),
+                datum_content = dmc.Alert("Nelze se připojit k RPi", title="Error!", color="red"),
             
 
             return datum_content
@@ -234,7 +241,7 @@ class Utils():
     def compare_time(self, time1, time2):
         return datetime.strptime(time1, '%H:%M') < datetime.strptime(time2, '%H:%M')
     
-
+    """
     def is_connected_to_ap(self, target_ssid):
         try:
             # Use nmcli to get the name of the currently connected Wi-Fi network
@@ -252,7 +259,29 @@ class Utils():
         except subprocess.CalledProcessError as e:
             print(f"Error while checking network: {e}")
             return False
-        
+    """
+
+    def can_ping(self, ip, timeout=1):
+        try:
+            # Determine the OS
+            if platform.system().lower() == "windows":
+                # Windows ping command
+                cmd = ["ping", "-n", "1", "-w", str(timeout * 1000), ip]
+            else:
+                # Linux/macOS ping command
+                cmd = ["ping", "-c", "1", "-W", str(timeout), ip]
+            
+            # Execute the ping command
+            result = subprocess.run(
+                cmd, 
+                stdout=subprocess.DEVNULL, 
+                stderr=subprocess.DEVNULL
+            )
+            return result.returncode == 0
+        except Exception as e:
+            print(f"Error pinging {ip}: {e}")
+            return False
+     
 
     def list_remote_directory(self,host, username, password, remote_path):
         try:
@@ -271,3 +300,13 @@ class Utils():
         except Exception as e:
             print(f"Error: {e}")
             return []
+        
+    
+    def read_log(self, filename):
+        filename = f"holter_vysledky/logfile_{filename}.log"
+        try:
+            with open(filename, "r") as f:
+                return dmc.Textarea(value=f.read(), autosize=True)
+        except:
+            return dmc.Alert("Logfile nebyl nalezen", title="Error!", color="red")
+        
