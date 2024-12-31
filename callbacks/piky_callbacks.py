@@ -47,7 +47,7 @@ class PikyCallbacks(Utils):
 
                 config = Utils.read_config()
                 print(inputs)
-                config_names = ["chbox_piky_neurokit", "chbox_piky_meze", "piky_Pmin", "piky_Pmax", "piky_PRmin", "piky_PRmax", "piky_QRSmax", "piky_QTcmax", "piky_FlexDer", "piky_delkaZobrazeni"]
+                config_names = ["chbox_piky_neurokit", "chbox_piky_meze", "piky_Pmin", "piky_Pmax", "piky_PRmin", "piky_PRmax","piky_QTcmin", "piky_QTcmax" , "piky_QRSmax", "piky_FlexDer","piky_prominenceP", "piky_delkaZobrazeni"]
 
                 index_num = 0
                 for i in inputs[1:]:
@@ -61,10 +61,9 @@ class PikyCallbacks(Utils):
                 limits = {
                     'peaks_P': {"operator": "<>", "threshold": [inputs[2][0], inputs[2][1]], "override_false": False},
                     'peaks_PR': {"operator": "<>", "threshold":[inputs[2][2], inputs[2][3]], "override_false": False},
-                    'peaks_PR': {"operator": ">", "threshold":       inputs[2][3], "override_false": False},
-                    'peaks_QRS': {"operator": ">", "threshold":      inputs[2][4], "override_false": False},
-                    'peaks_QTc': {"operator": ">", "threshold":      inputs[2][5], "override_false": False},
-                    'peaks_FlexDer': {"operator": ">", "threshold": inputs[2][6], "override_false": True}
+                    'peaks_QTc': {"operator": "<>", "threshold": [inputs[2][4], inputs[2][5]], "override_false": False},
+                    'peaks_QRS': {"operator": ">", "threshold":      inputs[2][6], "override_false": False},
+                    'peaks_FlexDer': {"operator": ">", "threshold": inputs[2][7], "override_false": True}
                 }
                 stats =  {
                     'peaks_P': 0,
@@ -147,35 +146,60 @@ class PikyCallbacks(Utils):
                         ]
 
                 columnDefs[2]["cellStyle"] = {"styleConditions": [
-                                                {"condition": f"params.value > 1", "style": {"border": "2px solid red", }}
+                                                {"condition": f"params.value > 1", "style": {"border": "2px solid red", }} # P Píky
                                             ]}
                 
                 columnDefs[3]["cellStyle"] = {"styleConditions": [
-                                                {"condition": f"params.value < {int(inputs[2][0])}", "style": {"border": "1px solid red", }}, 
+                                                {"condition": f"params.value < {int(inputs[2][0])}", "style": {"border": "1px solid red", }}, # P
                                                 {"condition": f"params.value > {int(inputs[2][1])}", "style": {"border": "1px solid red", }}
                                             ]}
                 columnDefs[4]["cellStyle"] = {"styleConditions": [
-                                                {"condition": f"params.value < {int(inputs[2][2])}", "style": {"border": "1px solid red", }}, 
+                                                {"condition": f"params.value < {int(inputs[2][2])}", "style": {"border": "1px solid red", }}, # PR
                                                 {"condition": f"params.value > {int(inputs[2][3])}", "style": {"border": "1px solid red", }}
                                             ]}
-            
-                columnDefs[5]["cellStyle"] = {"styleConditions": [
-                                                {"condition": f"params.value > {int(inputs[2][4])}", "style": {"border": "1px solid red", }},
-                                                {"condition": f"params.value === {int(inputs[2][4])}", "style": {"border": "1px solid red", }}
 
-                                            ]}
+
                 columnDefs[6]["cellStyle"] = {"styleConditions": [
-                                                {"condition": f"params.value > {int(inputs[2][5])}", "style": {"border": "1px solid red", }},
-                                                {"condition": f"params.value === {int(inputs[2][5])}", "style": {"border": "1px solid red", }}
+                                                {"condition": f"params.value < {int(inputs[2][4])}", "style": {"border": "1px solid red", }}, # QTc
+                                                {"condition": f"params.value > {int(inputs[2][5])}", "style": {"border": "1px solid red", }}
                                                 ]}
-                columnDefs[7]["cellStyle"] = {"styleConditions": [
-                                                {"condition": f"params.value > {int(inputs[2][6])}", "style": {"border": "1px solid green", }},
+
+                columnDefs[5]["cellStyle"] = {"styleConditions": [
+                                                {"condition": f"params.value > {int(inputs[2][6])}", "style": {"border": "1px solid red", }}, # QRS
                                                 {"condition": f"params.value === {int(inputs[2][6])}", "style": {"border": "1px solid red", }}
+
+                                            ]}                
+
+                columnDefs[7]["cellStyle"] = {"styleConditions": [
+                                                {"condition": f"params.value > {int(inputs[2][7])}", "style": {"border": "1px solid green", }} # FlexDer
                                             ]}
                 
-                columnDefs[8]["cellStyle"] = {"styleConditions": [{"condition": "params.value === true", "style": {"border": "1px solid red"}}]}
+                columnDefs[8]["cellStyle"] = {"styleConditions": [{"condition": "params.value === true", "style": {"border": "1px solid red"}}]} # ARYTMIE
+
+                
+                def decode_P_prominence(threshold):
+                    filtered_data = [
+                        [
+                            [index for index, value in zip(pair[0], pair[1]) if value >= threshold],  # Filter indexes
+                            [value for value in pair[1] if value >= threshold]                        # Filter values
+                        ]
+                        if any(value >= threshold for value in pair[1]) else [[], []]                # Check if pair has any valid values
+                        for pair in self.data["peaks_P_prominence"]
+                    ]
+
+                    return filtered_data
+
+                
+                self.P_prominence_data = decode_P_prominence(inputs[2][8])
+                print(self.P_prominence_data)
 
 
+                piky_len = []
+                for i in self.P_prominence_data:
+                    piky_len.append(len(i[0]))
+
+                
+                self.piky_data.insert(2, "peaks_P_prominence", piky_len)
 
                 row_data = self.piky_data.to_dict("records")
                 return row_data, stats_content, columnDefs
@@ -211,6 +235,8 @@ class PikyCallbacks(Utils):
                 for i in range(len(self.time["ekgtime"])):
                     if self.time["peaks_time"][cislo_piky] == self.time["ekgtime"][i]:
                         break
+
+
                 pik_index = i
                 start = int(i-250*delka_piky_s)
                 if start < 0:
@@ -218,6 +244,7 @@ class PikyCallbacks(Utils):
                 end = int(i+250*delka_piky_s)
                 if end > len(self.data["ekg"]):
                     end = len(self.data["ekg"])
+                
                 
 
 
@@ -239,8 +266,15 @@ class PikyCallbacks(Utils):
                     self.fig.add_vline(x=self.time["ekgtime"][pik_index-90].timestamp() * 1000, line_dash="dash", line_color="orange", line_width=2, annotation_text="-180 ms") # 180 ms before peak
                     self.fig.add_vline(x=self.time["ekgtime"][pik_index-140].timestamp() * 1000, line_dash="dash", line_color="orange", line_width=2, annotation_text="-280 ms") # 280 ms before peak
 
-                    self.fig.add_vline(x=self.time["ekgtime"][pik_index+160].timestamp() * 1000, line_dash="dash", line_color="blue", line_width=2, annotation_text="+320 ms") # 320 ms after peak
-                    self.fig.add_vline(x=self.time["ekgtime"][pik_index+225].timestamp() * 1000, line_dash="dash", line_color="blue", line_width=2, annotation_text="+450 ms") # 450 ms after peak
+
+                    QTc_line1 = round(320 / np.sqrt(self.data["peaks_RR_avg"][cislo_piky]/1000))
+                    QTc_line2 = round(450 / np.sqrt(self.data["peaks_RR_avg"][cislo_piky]/1000))
+
+                    QTc_x1 = self.time["ekgtime"][pik_index+(int((QTc_line1)/2))].timestamp() * 1000
+                    QTc_x2 = self.time["ekgtime"][pik_index+(int((QTc_line2)/2))].timestamp() * 1000
+
+                    self.fig.add_vline(x=QTc_x1, line_dash="dash", line_color="blue", line_width=2, annotation_text=f"+{QTc_line1} ms") # 320 ms after peak
+                    self.fig.add_vline(x=QTc_x2, line_dash="dash", line_color="blue", line_width=2, annotation_text=f"+{QTc_line2} ms") # 450 ms after peak
 
                 
                 #['ECG_P_Peaks', 'ECG_P_Onsets', 'ECG_P_Offsets', 'ECG_Q_Peaks', 'ECG_R_Onsets', 'ECG_R_Offsets', 'ECG_S_Peaks', 'ECG_T_Peaks', 'ECG_T_Onsets', 'ECG_T_Offsets']
@@ -250,8 +284,9 @@ class PikyCallbacks(Utils):
                         if self.data[i][cislo_piky] != 0:
                             self.fig.add_vline(x=self.data[i][cislo_piky] * 1000, line_dash="dash", line_color="pink", line_width=2, annotation_text=i.replace("ECG_", ""))
 
-                for i in self.data["peaks_P_prominence"][cislo_piky]:
-                    self.fig.add_vline(x=i * 1000, line_dash="dot", line_color="yellow", line_width=2, annotation_text="P pík")
+                for index, i in enumerate(self.P_prominence_data[cislo_piky][0]):
+                    print(i)
+                    self.fig.add_vline(x=i * 1000, line_dash="dot", line_color="yellow", line_width=2, annotation_text=f"Prom [{round(self.P_prominence_data[cislo_piky][1][index])}]")
                     
 
                 self.fig.update_layout(template="plotly_dark", margin=dict(l=125, r=0, t=0, b=50),

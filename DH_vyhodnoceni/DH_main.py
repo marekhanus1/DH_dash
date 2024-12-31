@@ -124,6 +124,7 @@ class DecodeHolter(ReadAndDecode, AnalyseHR, AnalysePeaks):
                 f.create_dataset("peaks_FlexDer", data=self.peaks_stats["FlexDer"], compression="gzip")
 
                 f.create_dataset("peaks_P_prominence", data=self.P_peaks, compression="gzip")
+                f.create_dataset("peaks_RR_avg", data=self.peaks_stats["RR_avg"], compression="gzip")
 
                 for key in self.ecg_peak_values:
                     f.create_dataset(key, data=self.ecg_peak_values[key], compression="gzip")

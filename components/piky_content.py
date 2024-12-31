@@ -55,9 +55,16 @@ def show_piky():
                     dmc.NumberInput(label="Maximální hodnota PR",  id={"type": "piky_input", "index": "piky_PRmax"},  value=config.get("piky_PRmax") , w=170),
                 ], gap=30),
 
+                dmc.Group([
+                    dmc.NumberInput(label="Maximální hodnota QTc", id={"type": "piky_input", "index": "piky_QTcmin"}, value=config.get("piky_QTcmin"), w=170),
+                    dmc.NumberInput(label="Maximální hodnota QTc", id={"type": "piky_input", "index": "piky_QTcmax"}, value=config.get("piky_QTcmax"), w=170),
+                ], gap=30),
+
                 dmc.NumberInput(label="Maximální hodnota QRS", id={"type": "piky_input", "index": "piky_QRSmax"}, value=config.get("piky_QRSmax"), w=370),
-                dmc.NumberInput(label="Maximální hodnota QTc", id={"type": "piky_input", "index": "piky_QTcmax"}, value=config.get("piky_QTcmax"), w=370),
+                
                 dmc.NumberInput(label="Maximální hodnota FlexDer", id={"type": "piky_input", "index": "piky_FlexDermax"}, value=config.get("piky_FlexDer"), w=370),
+
+                dmc.NumberInput(label="Minimální hodnota prominence P", id={"type": "piky_input", "index": "piky_prominenceP"}, value=config.get("piky_prominenceP"), w=370),
 
 
             ])

@@ -71,12 +71,12 @@ class AnalysePeaks:
 
 
 
-            print(peaks[i]-150,zacatek_hledani, peaks[i]-30)
-            print(len(ekg_pik_values[zacatek_hledani:(peaks[i]-30)]))
-            find_P_peaks,_ = signal.find_peaks(ekg_pik_values[zacatek_hledani:peaks[i]-30], prominence=int(self.args["pik_prominenceP"])) # 
+            find_P_peaks, prominence = signal.find_peaks(ekg_pik_values[zacatek_hledani:peaks[i]-30], prominence=int(self.args["pik_prominenceP"])) # 
+
+            prominence = list(prominence["prominences"])
 
             P_peaks_in_ms = [ekg_pik_casova_znacka[zacatek_hledani:peaks[i]-30][j] for j in find_P_peaks] # Časová značka P píků v sekundách 
-            P_peaks.append(P_peaks_in_ms)
+            P_peaks.append([P_peaks_in_ms, prominence])
 
 
             while self.epoch_stats["time"][index_epochy] <= peaks_in_ms[i]: # Najdi epochu, ve které se nachází R pík pro určení RR_avg a FlexDer
@@ -87,7 +87,7 @@ class AnalysePeaks:
             index_epochy -= 1 # Vrať se o jednu epochu zpět (Tam se R pík nachází)
 
             flex_der.append(self.epoch_stats["FlexDer"][index_epochy])
-            RR_avg = self.epoch_stats["RR_avg"][index_epochy]
+            RR_avg.append(self.epoch_stats["RR_avg"][index_epochy])
 
             try:
                 if ecg_peak_values['ECG_P_Onsets'][i] != 0 and ecg_peak_values['ECG_P_Offsets'][i] != 0:
@@ -121,7 +121,7 @@ class AnalysePeaks:
                 if ecg_peak_values['ECG_T_Offsets'][i] != 0 and ecg_peak_values['ECG_R_Onsets'][i] != 0:  
                     QT = (ecg_peak_values['ECG_T_Offsets'][i] - ecg_peak_values['ECG_R_Onsets'][i]) * 1000  
                             
-                    QTc = round(QT / np.sqrt(RR_avg/1000),2)
+                    QTc = round(QT / np.sqrt(RR_avg[i]/1000),2)
                     QTc_distance.append(QTc)
                 else:
                     QTc_distance.append(None)
@@ -134,14 +134,20 @@ class AnalysePeaks:
             ecg_peak_values[key] = np.array(ecg_peak_values[key]).astype(np.float64)
 
 
+        print(P_peaks)
+
         self.ecg_peak_values = ecg_peak_values
 
 
-        max_length = max(len(sublist) for sublist in P_peaks)
-        padded_data = [sublist + [0] * (max_length - len(sublist)) for sublist in P_peaks]
+        max_length = max(max(len(inner_list) for inner_list in pair) for pair in P_peaks)
+        padded_data = []
+        for pair in P_peaks:
+            padded_pair = [inner_list + [0] * (max_length - len(inner_list)) for inner_list in pair]
+            padded_data.append(padded_pair)
+
 
         self.P_peaks = np.array(padded_data).astype(np.float64)
-        print(P_peaks)
+        
 
 
         self.peaks_stats = {
@@ -151,6 +157,7 @@ class AnalysePeaks:
             "QRS": np.array(QRS_distance).astype(np.float64),
             "QTc": np.array(QTc_distance).astype(np.float64),
             "FlexDer": np.array(flex_der).astype(np.float64),
+            "RR_avg": np.array(RR_avg).astype(np.float64)
         }
 
         #print(self.peaks_stats)
