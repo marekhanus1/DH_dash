@@ -55,7 +55,10 @@ class FormCallbacks(Utils):
         def toggle_visibility(*switches):
             return [not switch for switch in switches[0]]
 
-        @self.app.callback(Output("datum_div", "children"),Output({"type": "nastaveni_checkbox","index":"chbox_SSH"}, "checked"), Input("datum_radio", "value"))
+        @self.app.callback(
+                Output("datum_div", "children"),Output({"type": "nastaveni_checkbox","index":"chbox_SSH"}, "checked"), Output("logfile_button", "disabled"),
+                Input("datum_radio", "value")
+        )
         def date_input_callback(value):
 
             date_content = self.choose_date_input(value, self.disable_components)
@@ -64,9 +67,10 @@ class FormCallbacks(Utils):
                 return no_update, no_update
             else:
                 if value == "normal":
-                    return date_content, False
+                    return date_content, False, False
                 else:
-                    return date_content, True
+
+                    return date_content, True, True
 
 
         @self.app.callback(
@@ -76,19 +80,12 @@ class FormCallbacks(Utils):
             prevent_initial_call=True
         )
         def show_log(n_clicks, date):
+            
             if n_clicks > 0:
-                return True, self.read_log(date)
-            return False, no_update
-        
+                try:
+                    date = self.args["date"]
+                except: pass
 
-        @self.app.callback(
-            Output('logfile_drawer', 'opened'), Output('logfile_drawer', 'children'),
-            Input('logfile_button2', 'n_clicks'),
-            prevent_initial_call=True
-        )
-        def show_log(n_clicks):
-            if n_clicks > 0:
-                date = self.args["date"]
                 return True, self.read_log(date)
             return False, no_update
 
@@ -143,7 +140,7 @@ class FormCallbacks(Utils):
             return False
 
         @self.app.callback(
-            Output('main-div', 'children', allow_duplicate=True),
+            Output('main-div', 'children', allow_duplicate=True), Output("logfile_button", "disabled", allow_duplicate=True),
             [Input('submit-button', 'n_clicks'), Input('posledni_vyhodnoceni_button', 'n_clicks')],
             
             State({"type": "nastaveni_switch", "index": ALL}, "checked"),
@@ -237,9 +234,9 @@ class FormCallbacks(Utils):
                     self.process.start()
                     self.disable_components = True
 
-                    return layout_content.after_start()
+                    return layout_content.after_start(), False
                 else:
                     self.shared_data["stage"] = 999
-                    return layout_content.after_start()
+                    return layout_content.after_start(), False
               
             return no_update

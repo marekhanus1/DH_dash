@@ -51,7 +51,7 @@ class DashMain(DashCallbacks):
 
 
         if __name__ == '__main__':
-            self.app.run_server(debug=True, port=5000) #,dev_tools_ui=False,dev_tools_props_check=False
+            self.app.run_server(debug=True, port=5001) #,dev_tools_ui=False,dev_tools_props_check=False
 
 DashMain()
 

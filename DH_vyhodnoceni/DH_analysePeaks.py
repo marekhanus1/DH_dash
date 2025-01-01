@@ -134,8 +134,6 @@ class AnalysePeaks:
             ecg_peak_values[key] = np.array(ecg_peak_values[key]).astype(np.float64)
 
 
-        print(P_peaks)
-
         self.ecg_peak_values = ecg_peak_values
 
 

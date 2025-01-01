@@ -51,7 +51,9 @@ class layout_content():
     def before_start():
         return html.Div([
                         dcc.Store(id='stage-store'),
+                        
                         html.H1("Holter dekodér", style={"text-align": "center"}),
+                        
                         dmc.Container([
                             html.Div([
                                 html.H3("Nastavení"),
@@ -60,6 +62,8 @@ class layout_content():
                                     dmc.Button("Potvrdit", id="submit-button", n_clicks=0, color="green"),
                                     dmc.Space(w="xs"),
                                     dmc.Button("Zobrazit poslední vyhodnocení", id="posledni_vyhodnoceni_button", n_clicks=0, color="blue"),
+                                    dmc.Space(w="xs"),
+                                    dmc.Button("Zobrazit logfile", id="logfile_button", n_clicks=0, color="orange"),
                                     html.Div(id='output-div'),
                                 ])
                             ])
@@ -90,8 +94,6 @@ class layout_content():
                                             dmc.AccordionControl("Info", icon=DashIconify(icon="clarity:info-solid")),
                                             dmc.AccordionPanel([
                                                 dmc.Card([html.Div([], id="fileinfo_div")], shadow="sm",radius="md",withBorder=True),
-                                                dmc.Space(h="10"),
-                                                dmc.Button("Zobrazit logfile", id="logfile_button2", n_clicks=0, color="blue"),
                                             ]),
                                         ],
                                         value="info",
@@ -101,7 +103,11 @@ class layout_content():
                             
                             dmc.Space(h="30"),
 
-                            dmc.Button("Resetovat vyhodnocení", id="reset-button", n_clicks=0, color="red"),
+                            dmc.Group([
+                                dmc.Button("Resetovat vyhodnocení", id="reset-button", n_clicks=0, color="red"),
+                                dmc.Space(w="xs"),
+                                dmc.Button("Zobrazit logfile", id="logfile_button", n_clicks=0, color="orange"),
+                            ]),
 
                             dmc.Space(h="5"),
 
@@ -182,7 +188,12 @@ class layout_content():
                             ]),
                             
                             dmc.Space(h="30"),
-                            dmc.Button("Nové vyhodnocení", id="reset-button", n_clicks=0, color="blue"),
+                            
+                            dmc.Group([
+                                dmc.Button("Nové vyhodnocení", id="reset-button", n_clicks=0, color="blue"),
+                                dmc.Space(w="xs"),
+                                dmc.Button("Zobrazit logfile", id="logfile_button", n_clicks=0, color="orange"),
+                            ]),
                             dmc.Space(h="5"),
                             
 

@@ -229,7 +229,7 @@ def show_tabs(disabled=False):
                     ]),
 
                     dmc.Space(h=20),
-                    dmc.NumberInput(id={"type": "nastaveni_inputSW", "index":"arg_piklimit"}, label="Prominence P píků", step=10, value=config.get('pik_prominenceP'), w=385, disabled=disabled),
+                    dmc.NumberInput(id={"type": "nastaveni_inputSW", "index":"arg_piklimit"}, label="Minimální prominence P píků", step=10, value=config.get('pik_prominenceP'), w=385, disabled=disabled),
                 ], id="pik_time_range_div", hidden=True),
                     
             ],withBorder=True,

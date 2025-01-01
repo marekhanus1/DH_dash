@@ -199,6 +199,11 @@ class PikyCallbacks(Utils):
                     piky_len.append(len(i[0]))
 
                 
+                try: 
+                    self.piky_data.drop(columns=["peaks_P_prominence"], inplace=True)
+                except: 
+                    pass
+                
                 self.piky_data.insert(2, "peaks_P_prominence", piky_len)
 
                 row_data = self.piky_data.to_dict("records")
@@ -260,11 +265,11 @@ class PikyCallbacks(Utils):
                 print(self.time["ekgtime"][pik_index-30])
                 
                 if self.zobraz_cary[1] == True:
-                    self.fig.add_vline(x=self.time["ekgtime"][pik_index-30].timestamp() * 1000, line_dash="dash", line_color="red", line_width=2, annotation_text="-60 ms") # 60 ms before peak
-                    self.fig.add_vline(x=self.time["ekgtime"][pik_index+30].timestamp() * 1000, line_dash="dash", line_color="red", line_width=2, annotation_text="+60 ms") # 60 ms after peak
+                    self.fig.add_vline(x=self.time["ekgtime"][pik_index-30].timestamp() * 1000, line_dash="dash", line_color="red", line_width=2, annotation_text="-60 ms", annotation_font_size=15) # 60 ms before peak
+                    self.fig.add_vline(x=self.time["ekgtime"][pik_index+30].timestamp() * 1000, line_dash="dash", line_color="red", line_width=2, annotation_text="+60 ms", annotation_font_size=15) # 60 ms after peak
 
-                    self.fig.add_vline(x=self.time["ekgtime"][pik_index-90].timestamp() * 1000, line_dash="dash", line_color="orange", line_width=2, annotation_text="-180 ms") # 180 ms before peak
-                    self.fig.add_vline(x=self.time["ekgtime"][pik_index-140].timestamp() * 1000, line_dash="dash", line_color="orange", line_width=2, annotation_text="-280 ms") # 280 ms before peak
+                    self.fig.add_vline(x=self.time["ekgtime"][pik_index-90].timestamp() * 1000, line_dash="dash", line_color="orange", line_width=2, annotation_text="-180 ms", annotation_font_size=15) # 180 ms before peak
+                    self.fig.add_vline(x=self.time["ekgtime"][pik_index-140].timestamp() * 1000, line_dash="dash", line_color="orange", line_width=2, annotation_text="-280 ms", annotation_font_size=15) # 280 ms before peak
 
 
                     QTc_line1 = round(320 / np.sqrt(self.data["peaks_RR_avg"][cislo_piky]/1000))
@@ -273,8 +278,8 @@ class PikyCallbacks(Utils):
                     QTc_x1 = self.time["ekgtime"][pik_index+(int((QTc_line1)/2))].timestamp() * 1000
                     QTc_x2 = self.time["ekgtime"][pik_index+(int((QTc_line2)/2))].timestamp() * 1000
 
-                    self.fig.add_vline(x=QTc_x1, line_dash="dash", line_color="blue", line_width=2, annotation_text=f"+{QTc_line1} ms") # 320 ms after peak
-                    self.fig.add_vline(x=QTc_x2, line_dash="dash", line_color="blue", line_width=2, annotation_text=f"+{QTc_line2} ms") # 450 ms after peak
+                    self.fig.add_vline(x=QTc_x1, line_dash="dash", line_color="blue", line_width=2, annotation_text=f"+{QTc_line1} ms", annotation_font_size=15) # 320 ms after peak
+                    self.fig.add_vline(x=QTc_x2, line_dash="dash", line_color="blue", line_width=2, annotation_text=f"+{QTc_line2} ms", annotation_font_size=15) # 450 ms after peak
 
                 
                 #['ECG_P_Peaks', 'ECG_P_Onsets', 'ECG_P_Offsets', 'ECG_Q_Peaks', 'ECG_R_Onsets', 'ECG_R_Offsets', 'ECG_S_Peaks', 'ECG_T_Peaks', 'ECG_T_Onsets', 'ECG_T_Offsets']
@@ -286,7 +291,8 @@ class PikyCallbacks(Utils):
 
                 for index, i in enumerate(self.P_prominence_data[cislo_piky][0]):
                     print(i)
-                    self.fig.add_vline(x=i * 1000, line_dash="dot", line_color="yellow", line_width=2, annotation_text=f"Prom [{round(self.P_prominence_data[cislo_piky][1][index])}]")
+                    self.fig.add_vline(x=i * 1000, line_dash="dot", line_color="yellow", line_width=2, 
+                                       annotation_text=f"Prom [{round(self.P_prominence_data[cislo_piky][1][index])}]", annotation_font_size=15)
                     
 
                 self.fig.update_layout(template="plotly_dark", margin=dict(l=125, r=0, t=0, b=50),
