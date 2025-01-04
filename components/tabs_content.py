@@ -267,3 +267,4 @@ def show_tabs(disabled=False):
     )
 
     return tabs
+    
