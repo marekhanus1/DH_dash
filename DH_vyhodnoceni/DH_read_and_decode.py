@@ -79,6 +79,9 @@ class ReadAndDecode:
         measurement_periods.append((current_period_start, current_period_end))
         self.shared_data["measurement_periods"] = measurement_periods
 
+        print("VALIDACE ČASOVÉ ZNAČKY")
+        self.ekg_casova_znacka, dta = self.validuj_casovou_znacku(self.ekg_casova_znacka, dta)
+
 
         # nastavení rozmezí vyhodnocení podle časové značky
         if(self.args["range"] != None):
@@ -102,7 +105,7 @@ class ReadAndDecode:
         print("Vytvoření datových proměnných")
         self.ekg_values_raw = np.array([int(value.split(";")[1]) for value in dta])
         self.ekg_values = self.ekg_values_raw
-        
+
         # EKG FILTRY
         if self.args["vrubovy"] != None:
             b, a = signal.iirnotch(50, self.args["vrubovy"], fs=500)  # notch filter
@@ -145,8 +148,12 @@ class ReadAndDecode:
             
             dta += dta_part
             self.flex_casova_znacka += flex_casova_znacka2
-        
         print("Datový soubor přečten")
+
+        print("VALIDACE ČASOVÉ ZNAČKY")
+        self.flex_casova_znacka, dta = self.validuj_casovou_znacku(self.flex_casova_znacka, dta)
+
+        
 
         if(self.args["range"] != None):
             start_file_flex, end_file_flex = self.get_time_range(self.flex_casova_znacka, self.args["range"])
@@ -239,3 +246,23 @@ class ReadAndDecode:
             if not decomp.eof:
                 raise lzma.LZMAError("Compressed data ended before the end-of-stream marker was reached")
         return b"".join(results)
+    
+    # Validate if data in timestamp are increasing, if it's not, delete its values from the data
+    def validuj_casovou_znacku(self, time, data):
+        print(len(time), len(data))
+        if len(time) != len(data):
+            raise ValueError("Time and data lists must have the same length")
+        
+        cleaned_time = [time[0]]
+        cleaned_data = [data[0]]
+        
+        for i in range(1, len(time)):
+            if time[i] > cleaned_time[-1]:  # Ensure timestamps are strictly increasing
+                cleaned_time.append(time[i])
+                cleaned_data.append(data[i])
+        
+        print("CLEANED DATA")
+        print(len(cleaned_time), len(cleaned_data))
+        return cleaned_time, cleaned_data
+
+

@@ -55,6 +55,8 @@ class DecodeHolter(ReadAndDecode, AnalyseHR, AnalysePeaks):
 
         print("EKG READ...")
         self.read_ekg()
+
+
         self.shared_data["stage"] = 2 # Fáze dva - EKG přečteno
 
         if(self.args["export"] == True):
