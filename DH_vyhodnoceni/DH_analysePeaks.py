@@ -8,6 +8,11 @@ class AnalysePeaks:
     def peak_analysis(self):
         start_file_ekg, end_file_ekg = self.get_time_range(self.ekg_casova_znacka, self.args["pik_range"])
         
+        if start_file_ekg == None or end_file_ekg == None:
+            self.shared_data["pik_range_error"] = "Neexistují žádné data pro zadané časové rozmezí! Přeskakuji vyhodnocení píků."
+            self.args["pik_range"] = None
+            return
+        
 
         
         ekg_pik_values = self.ekg_values[start_file_ekg:end_file_ekg] # Rozmezí EKG, které se bude analyzovat

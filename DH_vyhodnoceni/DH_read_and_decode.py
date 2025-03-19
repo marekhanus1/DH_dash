@@ -15,7 +15,8 @@ class ReadAndDecode:
         self.file_skip = False
         dta = []
         self.ekg_casova_znacka = []
-
+        ekg_cas_souboru = [datetime.strptime(i.split("Holter_")[1].split(".")[0], "%y%m%d_%H%M%S").timestamp() for i in self.ekg_files]
+        ekg_velikost_souboru = []
         for cislo_souboru in range(len(self.ekg_files)):
             with open(self.ekg_files[cislo_souboru], "rb") as f:
                 data = f.read() # přečti zkomprimované data EKG souboru
@@ -46,9 +47,17 @@ class ReadAndDecode:
                     dta_part = dta_part[:i]
                     break
             
+            
+
             self.ekg_casova_znacka += ekg_casova_znacka2
             dta += dta_part
+            ekg_velikost_souboru.append(len(dta))
 
+        print("VALIDACE ČASOVÉ ZNAČKY")
+        self.ekg_casova_znacka, dta = self.validuj_casovou_znacku(self.ekg_casova_znacka, dta, ekg_velikost_souboru, ekg_cas_souboru)
+        
+        
+        
         print(f"Počet použitelných dat: {len(dta)}")
         print(self.ekg_casova_znacka[-1])
 
@@ -79,14 +88,15 @@ class ReadAndDecode:
         measurement_periods.append((current_period_start, current_period_end))
         self.shared_data["measurement_periods"] = measurement_periods
 
-        print("VALIDACE ČASOVÉ ZNAČKY")
-        self.ekg_casova_znacka, dta = self.validuj_casovou_znacku(self.ekg_casova_znacka, dta)
+       
 
 
         # nastavení rozmezí vyhodnocení podle časové značky
         if(self.args["range"] != None):
             start_file_ekg, end_file_ekg = self.get_time_range(self.ekg_casova_znacka, self.args["range"])
-            if self.file_skip == True:
+            if [start_file_ekg, end_file_ekg] == [None, None]:
+                self.shared_data["error"] = "Špatně zadaný časový úsek. Resetujte vyhodnocení."
+                self.end_program = True
                 return
             
 
@@ -151,7 +161,7 @@ class ReadAndDecode:
         print("Datový soubor přečten")
 
         print("VALIDACE ČASOVÉ ZNAČKY")
-        self.flex_casova_znacka, dta = self.validuj_casovou_znacku(self.flex_casova_znacka, dta)
+        #self.flex_casova_znacka, dta = self.validuj_casovou_znacku(self.flex_casova_znacka, dta)
 
         
 
@@ -206,7 +216,6 @@ class ReadAndDecode:
         else:
             print("Error určení rozmezí souboru")
             # Časové rozmezí se nenachází v tomto souboru => přesuň se na další soubor
-            self.file_skip = True
             
             return None, None
 
@@ -248,21 +257,50 @@ class ReadAndDecode:
         return b"".join(results)
     
     # Validate if data in timestamp are increasing, if it's not, delete its values from the data
-    def validuj_casovou_znacku(self, time, data):
+    def validuj_casovou_znacku(self, time, data, file_sizes, file_time,max_diff=0.004):
         print(len(time), len(data))
+
         if len(time) != len(data):
             raise ValueError("Time and data lists must have the same length")
         
-        cleaned_time = [time[0]]
-        cleaned_data = [data[0]]
-        
+        sections = []
+        corrupted_sections = []
+        start = None
+        start_index = 0
+
+        cleaned_data = []
+        cleaned_time = []
+
         for i in range(1, len(time)):
-            if time[i] > cleaned_time[-1]:  # Ensure timestamps are strictly increasing
-                cleaned_time.append(time[i])
-                cleaned_data.append(data[i])
+            if time[i] - time[i-1] < max_diff and time[i] > time[i-1]: # Validní data
+                if start is None:
+                    start = time[i - 1]
+                    start_index = i - 1
+            else: # Chyba, zapiš jako konec úseku
+                if start is not None:
+                    corrupted_sections.append((start, time[i - 1]))
+                    sections.append((start_index,  i - 1))
+                    
+                    
+
+                    start = None
         
-        print("CLEANED DATA")
-        print(len(cleaned_time), len(cleaned_data))
+        if start is not None:
+            corrupted_sections.append((time[start_index], time[-1]))
+            sections.append((start_index,  i - 1))
+        
+            
+        
+        for i in range(len(corrupted_sections)-1):
+            section = corrupted_sections[i]
+            if section[1] > corrupted_sections[i+1][0]:
+                print(f"Chyba v úseku {datetime.fromtimestamp(section[0]).strftime('%H:%M:%S')} - {datetime.fromtimestamp(section[1]).strftime('%H:%M:%S')}")
+                sections[i] = (None, None)
+
+        for i in range(len(sections)):
+            if sections[i] != (None, None):
+                cleaned_data += data[sections[i][0]:sections[i][1]]
+                cleaned_time += time[sections[i][0]:sections[i][1]]
+
+        print(f"Počet chybějících dat: {len(data) - len(cleaned_data)}")
         return cleaned_time, cleaned_data
-
-

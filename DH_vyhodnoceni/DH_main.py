@@ -79,8 +79,9 @@ class DecodeHolter(ReadAndDecode, AnalyseHR, AnalysePeaks):
         self.analyze_HR()
         self.shared_data["stage"] = 5 # Fáze pět - analýza HR dokončena
 
-        print("ANALYZE PEAKS...")
+        
         if self.args["pik_range"] != None:
+            print("ANALYZE PEAKS...")
             self.peak_analysis()
 
         self.shared_data["stage"] = 6 # Fáze šest - analýza píků dokončena

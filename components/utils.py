@@ -115,7 +115,14 @@ class Utils():
         else:
             info_content += [dmc.Group(["Úseky měření: ", dmc.Loader(color="red", size="md", type="dots")]),]
 
+        if "pik_range_error" in self.shared_data:
+
+            info_content += [dmc.Alert(self.shared_data["pik_range_error"], title="Špatně zadané rozmezí souboru!", color="yellow"),]
+            self.args["pik_range"] = None
         
+        if "error" in self.shared_data:
+            info_content += [dmc.Alert(self.shared_data["error"], title="Error!", color="red"),]
+
         return info_content
     
 
