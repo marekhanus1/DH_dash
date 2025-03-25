@@ -5,6 +5,8 @@ from callbacks.main_callbacks import DashCallbacks
 from dash import _dash_renderer
 
 from DH_vyhodnoceni.DH_main import DecodeHolter
+from DH_vyhodnoceni.DH_analyseEpochPeaks import EpochPeaksAnalyser
+
 import dash_mantine_components as dmc
 
 import multiprocessing
@@ -24,7 +26,10 @@ class DashMain(DashCallbacks):
         
         manager = multiprocessing.Manager()
         self.shared_data = manager.dict()
+        self.epoch_piky_shared = manager.dict()
+
         self.decode_holter = DecodeHolter(self.shared_data)
+        self.epoch_peaks_analyser = EpochPeaksAnalyser(self.epoch_piky_shared)
 
         self.stage_num = 0
         self.path_name = ""
@@ -44,7 +49,7 @@ class DashMain(DashCallbacks):
         
         # Register callbacks
         self.register_callbacks()
-
+        
         self.fig.register_update_graph_callback(app=self.app, graph_id="graph-id")
         self.fig.register_update_graph_callback(app=self.app, graph_id="epochy_graph")
         self.fig.register_update_graph_callback(app=self.app, graph_id="piky_graph")
@@ -54,14 +59,5 @@ class DashMain(DashCallbacks):
             self.app.run_server(debug=True, port=5000) #,dev_tools_ui=False,dev_tools_props_check=False
 
 DashMain()
-
-
-# TODO
-# Zbavit se DatePickeru a nahradit ho selectem, který čte hodnoty z RPi - done
-# Konečně spravit tu Filtr tabulku - done
-# Pik analyzer:
-    # Upravit hodnoty v tabulce podle SOČ - done
-    # Přidat vyhodnocení arytmie, vyhodnocení RR_avg a FlexDER podle epoch 
-    # Error s make_subplots (tvoří se až moc grafů, které se nemažou???)
 
 

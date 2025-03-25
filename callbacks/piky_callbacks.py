@@ -7,6 +7,8 @@ import plotly.graph_objects as go
 import pandas as pd
 from components.piky_content import columnDefs
 import numpy as np
+import os
+
 
 class PikyCallbacks(Utils):
     def piky_callbacks(self):
@@ -114,6 +116,17 @@ class PikyCallbacks(Utils):
                 # If hodnoceni is not in the dataframe, add it
                 if "hodnoceni" not in self.piky_data.columns:
                     self.piky_data["hodnoceni"] = ""
+
+                    # Check if the file exists
+                    filename = f"Holter_piky_vysledky/Holter_{self.args['date']}_piky.csv"
+                    if os.path.exists(filename):
+                        # Read the file
+                        saved_data = pd.read_csv(filename)
+                        
+                        # Check if "hodnoceni" column exists in the saved data
+                        if "hodnoceni" in saved_data.columns:
+                            # Update the "hodnoceni" column in self.piky_data
+                            self.piky_data["hodnoceni"] = saved_data["hodnoceni"]
 
                 pocet_piku = len(self.piky_data["arytmie"])
                 

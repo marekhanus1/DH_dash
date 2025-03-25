@@ -12,6 +12,7 @@ def create_layout():
         forceColorScheme="dark",
         theme=dmc.DEFAULT_THEME,
         children=html.Div([
-            layout_content.before_start()
-        ], id="main-div")
+            dcc.Location(id='url', refresh=False),
+            html.Div(id='main-div', children=layout_content.before_start())
+        ])
     )

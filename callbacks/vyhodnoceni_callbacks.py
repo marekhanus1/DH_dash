@@ -44,6 +44,9 @@ class VyhodnoceniCallbacks(Utils):
                 except:
                     print("Process does not exist")
 
+                print(self.shared_data)
+                self.shared_data.clear()
+                self.shared_data["stage"] = 0
                 self.disable_components = False
 
                 return layout_content.before_start()
@@ -87,7 +90,6 @@ class VyhodnoceniCallbacks(Utils):
             # Return the layout corresponding to the current stage
             if self.stage_num != stage and stage != None:
                 interval_disabled = True
-                print("SOM? TU")
                 self.stage_num = stage
                 if stage >= 3:
                     print("START")

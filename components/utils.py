@@ -73,6 +73,7 @@ class Utils():
 
     def handle_progressbar(self):
         progressbar_content = []
+        print(self.shared_data["stage"])
         if self.shared_data["stage"] >= 2:
             progressbar_content += [dmc.ProgressSection(dmc.ProgressLabel("EKG"), value=30, color="red"),]
         

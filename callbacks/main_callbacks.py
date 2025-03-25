@@ -19,9 +19,8 @@ class DashCallbacks(FormCallbacks, VyhodnoceniCallbacks, VysledkyCallbacks, Epoc
         
         # Callback pro větvení stránek
         @self.app.callback(
-            Output('main-div', 'children', allow_duplicate=True),
-            Input('url', 'pathname'),
-            prevent_initial_call=True
+            Output('main-div', 'children'),
+            Input('url', 'pathname')
         )
         
         def display_page(pathname):

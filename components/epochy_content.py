@@ -16,7 +16,8 @@ columnDefs = [
     {"headerName": "RMSSD", 'field': 'epochy_RMSSD'},
     {"headerName": "FlexDer", 'field': 'epochy_FlexDer' },
     {"headerName": "Arytmie", 'field': 'arytmie'},
-    {'headerName': 'Hodnocení', 'field': 'hodnoceni', 'editable': True}
+    {'headerName': 'Ruční hodnocení', 'field': 'hodnoceni', 'editable': True},
+    {'headerName': 'AI', 'field': 'ai'}
     
 ]
 
@@ -108,6 +109,10 @@ def show_epochy():
                 html.Button("Set Category A", id="epochy_category_a_shift", n_clicks=0, style={"display": "none"}),
                 html.Button("Set Category S", id="epochy_category_s_shift", n_clicks=0, style={"display": "none"}),
                 html.Button("Set Category N", id="epochy_category_n_shift", n_clicks=0, style={"display": "none"}),
+                html.Button("SHOW PEAKS", id="epochy_piky_url", n_clicks=0, style={"display": "none"}),  
+
+                dcc.Store(id="epochy-url-store", data={}),
+
                 html.Button("Reset graph", id="epochy_reset_button", n_clicks=0, style={"display": "none"}),
                 html.Button("Arrow UP", id="epochy_arrowup_button", n_clicks=0, style={"display": "none"}),
                 html.Button("Arrow DOWN", id="epochy_arrowdown_button", n_clicks=0, style={"display": "none"}),

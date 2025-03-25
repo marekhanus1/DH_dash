@@ -21,6 +21,7 @@ class DecodeHolter(ReadAndDecode, AnalyseHR, AnalysePeaks):
         
         self.vzorkovaci_frekvence = 500 # VZORKOVACÍ FREKVENCE
         
+        
         self.shared_data["stage"] = 0 # Fáze nula - inicializace programu
         
         if(self.args["ssh"] == True): # STÁHNI SOUBORY Z RPi

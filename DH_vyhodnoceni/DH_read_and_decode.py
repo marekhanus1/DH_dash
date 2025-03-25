@@ -54,12 +54,13 @@ class ReadAndDecode:
             ekg_velikost_souboru.append(len(dta))
 
         print("VALIDACE ČASOVÉ ZNAČKY")
-        self.ekg_casova_znacka, dta = self.validuj_casovou_znacku(self.ekg_casova_znacka, dta, ekg_velikost_souboru, ekg_cas_souboru)
+        self.ekg_casova_znacka, dta = self.validuj_casovou_znacku(self.ekg_casova_znacka, dta)
         
         
         
         print(f"Počet použitelných dat: {len(dta)}")
-        print(self.ekg_casova_znacka[-1])
+        
+        print(self.ekg_casova_znacka[0], self.ekg_casova_znacka[-1])
 
         # Vypočítej množství dat v datovém souboru
         mozny_pocet_minut = len(dta)/(500*60)
@@ -143,7 +144,6 @@ class ReadAndDecode:
 
             # nastavení rozmezí vyhodnocení podle časové značky
             flex_casova_znacka = [float(value.split(";")[0]) for value in dta_part]
-            print(len(flex_casova_znacka))
             flex_casova_znacka2 = []
             start_time = datetime.strptime(self.args["date"], "%y%m%d") - timedelta(minutes=5)
             end_time = start_time+timedelta(days=1) + timedelta(minutes=5)
@@ -161,7 +161,7 @@ class ReadAndDecode:
         print("Datový soubor přečten")
 
         print("VALIDACE ČASOVÉ ZNAČKY")
-        #self.flex_casova_znacka, dta = self.validuj_casovou_znacku(self.flex_casova_znacka, dta)
+        self.flex_casova_znacka, dta = self.validuj_casovou_znacku(self.flex_casova_znacka, dta, max_diff=0.04)
 
         
 
@@ -257,7 +257,7 @@ class ReadAndDecode:
         return b"".join(results)
     
     # Validate if data in timestamp are increasing, if it's not, delete its values from the data
-    def validuj_casovou_znacku(self, time, data, file_sizes, file_time,max_diff=0.004):
+    def validuj_casovou_znacku(self, time, data, max_diff=0.004):
         print(len(time), len(data))
 
         if len(time) != len(data):

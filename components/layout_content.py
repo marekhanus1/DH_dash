@@ -125,7 +125,7 @@ class layout_content():
                                      
                                     create_card("VÝSLEDKY", "Zobrazit vyhodnocené data v grafu", src="assets/vysledky_img.png"),
                                     create_card("EPOCHY",   "Analýza epoch měření", src="assets/epochy_img.png"),
-                                    create_card("PÍKY",   "Analýza píků měření", src="assets/epochy_img.png"),
+                                    create_card("PÍKY",   "Analýza píků měření", src="assets/piky_img.png"),
                                 ],
                             )
                             ])
@@ -216,7 +216,7 @@ class layout_content():
                                 dmc.SimpleGrid(cols=2,spacing="lg", verticalSpacing="lg", children=[
                                     create_card("VÝSLEDKY", "Zobrazit vyhodnocené data v grafu", link="/vysledky", loading=False, src="assets/vysledky_img.png"),
                                     create_card("EPOCHY",   "Analýza epoch měření", link=epochy_link,   loading=False, src="assets/epochy_img.png", available=epochy_icon),
-                                    create_card("PÍKY",   "Analýza píků měření", link=pik_link,   loading=False, src="assets/epochy_img.png", available=pik_icon),
+                                    create_card("PÍKY",   "Analýza píků měření", link=pik_link,   loading=False, src="assets/piky_img.png", available=pik_icon),
                                 ])
                             ])
                                 

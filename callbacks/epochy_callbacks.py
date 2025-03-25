@@ -6,7 +6,8 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import pandas as pd
 from components.epochy_content import columnDefs
-
+import os
+import multiprocessing
 
 class EpochyCallbacks(Utils):
     def epochy_callbacks(self):
@@ -43,7 +44,6 @@ class EpochyCallbacks(Utils):
                 for i in range(len(config_names)):
                     config[config_names[i]] = inputs[i+1]
 
-                print(config)
 
                 self.write_config(config)
 
@@ -95,6 +95,17 @@ class EpochyCallbacks(Utils):
                 # If hodnoceni is not in the dataframe, add it
                 if "hodnoceni" not in self.epochy_data.columns:
                     self.epochy_data["hodnoceni"] = ""
+
+                    # Check if the file exists
+                    filename = f"Holter_epochy_vysledky/Holter_{self.args['date']}_epochy.csv"
+                    if os.path.exists(filename):
+                        # Read the file
+                        saved_data = pd.read_csv(filename)
+                        
+                        # Check if "hodnoceni" column exists in the saved data
+                        if "hodnoceni" in saved_data.columns:
+                            # Update the "hodnoceni" column in self.epochy_data
+                            self.epochy_data["hodnoceni"] = saved_data["hodnoceni"]
                 
 
                 pocet_epoch = len(self.epochy_data["arytmie"])
@@ -162,11 +173,11 @@ class EpochyCallbacks(Utils):
                 delka_epochy_s = round((self.time["epochy_time"][1]-self.time["epochy_time"][0]).total_seconds())
 
 
-                ekg_epocha = list(self.data["ekg"][cislo_epochy*500*delka_epochy_s:cislo_epochy*500*delka_epochy_s+500*delka_epochy_s])
-                ekg_epocha_cz = list(self.time["ekgtime"][cislo_epochy*500*delka_epochy_s:cislo_epochy*500*delka_epochy_s+500*delka_epochy_s])
+                self.ekg_epocha = list(self.data["ekg"][cislo_epochy*500*delka_epochy_s:cislo_epochy*500*delka_epochy_s+500*delka_epochy_s])
+                self.ekg_epocha_cz = list(self.time["ekgtime"][cislo_epochy*500*delka_epochy_s:cislo_epochy*500*delka_epochy_s+500*delka_epochy_s])
             
 
-                self.fig.add_trace(go.Scattergl(name=f"EKG EPOCHA {cislo_epochy}"), hf_x=ekg_epocha_cz, hf_y=ekg_epocha)
+                self.fig.add_trace(go.Scattergl(name=f"EKG EPOCHA {cislo_epochy}"), hf_x=self.ekg_epocha_cz, hf_y=self.ekg_epocha)
                 
 
                 self.fig.update_layout(template="plotly_dark", margin=dict(l=125, r=0, t=0, b=50),
@@ -196,7 +207,10 @@ class EpochyCallbacks(Utils):
             """
                 function(id) {
                     document.addEventListener("keydown", function(event) {
-                        
+                        if (event.key === 'Enter') {
+                            document.getElementById('epochy_piky_url').click();
+                        }
+                    
                         // Kategorie pro epochy
                         if(event.shiftKey) // Write all empty cells with category
                         {
@@ -321,7 +335,6 @@ class EpochyCallbacks(Utils):
         def arrow_movement(up,down,selected_rows,row_data):
             print(ctx.triggered_id)
 
-            print(row_data)
             cislo_epochy = selected_rows[0]["Číslo epochy"]
             selected_index = next((i for i, item in enumerate(row_data) if item['Číslo epochy'] == cislo_epochy), None)
 
@@ -434,3 +447,39 @@ class EpochyCallbacks(Utils):
             self.fig.update_xaxes(autorange=True)
             self.fig.update_yaxes(autorange=True)
             return self.fig
+        
+        @self.app.callback(
+            Output('epochy_piky_url', 'n_clicks'),
+            Input('epochy_piky_url', 'n_clicks'),
+            prevent_initial_call=True
+        )
+        def redirect_to_piky(n_clicks):
+            return n_clicks
+        
+        @self.app.callback(
+            Output("epochy-url-store", "data", allow_duplicate=True),
+            Input('epochy_piky_url', 'n_clicks'),
+            State('epochy_gridtable', 'selectedRows'),
+            prevent_initial_call=True
+        )
+        def update_link(n_clicks, selected_rows):
+            print(selected_rows[0]["Číslo epochy"])
+            RR_avg = selected_rows[0]["epochy_HR"]
+            self.epochy_pik_process = multiprocessing.Process(target=self.epoch_peaks_analyser.run_epoch_piky, args=(self.ekg_epocha, self.ekg_epocha_cz, self.args, RR_avg)) # Spusť vyhodnocovací program přes Multiprocessing
+            self.epochy_pik_process.start()
+
+            return {"url": f"/epochy_piky_{selected_rows[0]['Číslo epochy']}"}
+        
+        self.app.clientside_callback(
+            """
+            function(data) {
+            if (data && data.url) {
+                window.open(data.url, "_blank");  // Open in new tab
+                return window.dash_clientside.no_update;  // Prevent reset
+            }
+            return window.dash_clientside.no_update;
+            }
+            """,
+            Output("epochy-url-store", "clear_data"),  # Corrected to avoid modifying the store
+            Input("epochy-url-store", "data")
+        )

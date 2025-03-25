@@ -1,10 +1,10 @@
 {
-    "date": "241217",
+    "date": "250215",
     "ssh": false,
     "rangeSW": false,
     "rangeMax": 1020,
     "rangeMin": 480,
-    "pik_limit": 3000,
+    "pik_limit": 2500,
     "butter_SW": false,
     "butter_val": 4,
     "vrub_SW": true,
@@ -22,8 +22,8 @@
     "RMSSD": 500,
     "FlexDeriv": 30,
     "FlexDer": 29,
-    "pik_rangeStart": "23:50",
-    "pik_rangeEnd": "23:59",
+    "pik_rangeStart": "10:50",
+    "pik_rangeEnd": "10:59",
     "pik_prominenceP": 1,
     "chbox_piky_neurokit": false,
     "chbox_piky_meze": true,
@@ -35,6 +35,6 @@
     "piky_QTcmax": 450,
     "piky_QTcmin": 350,
     "piky_FlexDer": 30,
-    "piky_prominenceP": 20,
+    "piky_prominenceP": 33,
     "piky_delkaZobrazeni": 1
 }
